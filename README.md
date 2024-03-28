@@ -3,7 +3,16 @@ A library to allow frontend web programmers to embed chiptune into their website
 
 You can play back a song with infinite looping, 2 loops and a fade. You can generate an `<audio>` element for playback controls. You can render a chiptune then download it as a wav file.
 
-It is currently a work in progress. It can only play SPC and PSF files at the moment.
+It is currently a work in progress. It can play:
+
+- SPC
+- PSF
+- NSF
+- NSFE
+- GBS
+- AY
+- SAP
+- HES
 
 This repository will be a combination of all my other web chiptune repositories.
 
