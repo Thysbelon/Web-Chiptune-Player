@@ -1,0 +1,3 @@
+https://packages.ubuntu.com/en/mantic/upse123
+
+http://archive.ubuntu.com/ubuntu/pool/universe/u/upse/upse_1.0.0.orig.tar.gz

@@ -1,0 +1,1 @@
+emcc -O3 -I../../libvgm ../../libvgm/build-emscripten/bin/libvgm-emu.a ../../libvgm/build-emscripten/bin/libvgm-player.a ../../libvgm/build-emscripten/bin/libvgm-utils.a main.cpp -o Web-VGM-Player.js -sEXPORTED_RUNTIME_METHODS=FS -sMODULARIZE -s 'EXPORT_NAME="WebVGMplayer"' -sUSE_ZLIB

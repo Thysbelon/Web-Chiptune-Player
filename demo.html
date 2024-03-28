@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<head>
+<meta charset=utf-8>
+<title>Web-Chiptune-Player Demo</title>
+<meta name=color-scheme content="dark light">
+<meta name=viewport content=width=device-width,initial-scale=1.0>
+<script src=web/sox/sox.js></script>
+<script src=web/Web-GSF-Player/gsf2wav.js></script> <!-- remember to set the right script -->
+<script src=web/Web-PSF-Player/Web-PSF-Player.js></script>
+<script src=web/Web-VGM-Player/Web-VGM-Player.js></script>
+<script src=web/Web-SPC-Player/Web-SPC-Player.js></script>
+<script src=web/web-chiptune-functions.js></script>
+</head>
+<body>
+<p>Feel free to use the console to test the other functions in the library.
+<br>
+<label for="song-select-file">Upload a song:</label>
+<input type=file id="song-select-file" multiple />
+<button>Run</button>
+<br>
+<figure>
+<figcaption>
+SPC audio element with fade out demonstration
+</figcaption>
+<audio controls data-chiptune="test-music/plok-03.spc" data-introLength='1000' data-renderLength='2000' data-loops='2' data-fade='1000'></audio> <!-- these introLength and renderLength values are placeholders -->
+</figure>
+<figure>
+<figcaption>
+PSF audio element with infinite looping demonstration (<strong>warning: loud</strong>)
+</figcaption>
+<audio controls data-chiptune="test-music/klonoa/Cronoa008.psf test-music/klonoa/driver.psflib" data-introLength='1000' data-renderLength='2000' data-loops='infinite'></audio>
+</figure>
+<script>
+function wrapper() {
+	var fileInput=document.getElementById("song-select-file")
+	playChiptune(fileInput.files)
+	//playChiptune(['test-music/klonoa/Cronoa008.psf', 'test-music/klonoa/driver.psflib'])
+	//playChiptune('test-music/102 The Brink of Death.psf')
+}
+document.querySelector("button").addEventListener("click", wrapper)
+
+document.querySelectorAll("audio[data-chiptune]").forEach(element => element.addEventListener('play', playChiptuneHandler))
+</script>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<head>
+<meta charset=utf-8>
+<title>Web-GSF-Player Demo</title>
+<meta name=color-scheme content="dark light">
+<meta name=viewport content=width=device-width,initial-scale=1.0>
+<!--<script src=sox/sox.js></script>-->
+<script src=gsf2wav.js></script> <!-- remember to set the right script -->
+<!--<script src=web-spc-functions.js></script>-->
+</head>
+<body>
+<p>When selecting files, look at the text string; make sure gsflib comes <em>after</em> the minigsf file. <br>
+<label for="song-select-file">Upload a song:</label>
+<input type=file id="song-select-file" multiple />
+<button>Run</button>
+<script>
+async function wrapper() {
+	var fileInput=document.getElementById("song-select-file")
+	var chiptuneArrayBuf=await fileInput.files[0].arrayBuffer() 
+	var gsflibBool=false
+	if (fileInput.files[1]) {var gsflibArrayBuf=await fileInput.files[1].arrayBuffer(); var gsflibName=fileInput.files[1].name; gsflibBool=true} // to do: put this statement in a worker
+	const module = {
+		arguments: ["input.gsf", "output.wav"],
+		preRun: () => {
+			module.FS.writeFile("input.gsf", new Uint8Array(chiptuneArrayBuf));
+			if (gsflibBool) {module.FS.writeFile(gsflibName, new Uint8Array(gsflibArrayBuf))};
+		},
+		postRun: () => {
+			let output = module.FS.readFile("output.wav", {
+				encoding: "binary",
+			});
+			//let output2 = module.FS.readFile("info.txt");
+			download(new File([output], fileInput.files[0].name+"-output.wav"))
+			//download(new File([output2], fileInput.files[0].name+"-info.txt"))
+		},
+	};
+	const start = performance.now()
+	await WebGSFplayer(module);
+	const end = performance.now()
+	console.log('performance: '+(end-start))
+}
+document.querySelector("button").addEventListener("click", wrapper)
+
+function download(file) { // to do: replace the file argument with blob and name?
+	const link = document.createElement('a')
+	const url = URL.createObjectURL(file)
+	
+	link.href = url
+	link.download = file.name
+	document.body.appendChild(link)
+	link.click()
+	
+	document.body.removeChild(link)
+	window.URL.revokeObjectURL(url)
+}
+</script>

@@ -1,0 +1,4 @@
+before running cmake:
+embuilder build zlib
+
+emcmake cmake ../ -DUTIL_THREADING=OFF -DBUILD_LIBAUDIO=OFF -DBUILD_PLAYER=OFF -DBUILD_VGM2WAV=OFF -DUSE_SANITIZERS=OFF
