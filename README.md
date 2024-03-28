@@ -20,9 +20,9 @@ This folder contains the c source code of the Emscripten modules used in the lib
 ## Credits
 This library borrows code from many different open source libraries. If a library I used is not mentioned here, its source should be listed in a text file in the repository.
 
+- [game_music_emu](https://github.com/libgme/game-music-emu)
 - [upse123](https://packages.ubuntu.com/en/mantic/upse123)
 - [snes_spc](https://github.com/blarggs-audio-libraries/snes_spc)
 - [gsf2wav](https://github.com/jprjr/gsf2wav)
 - [libvgm](https://github.com/ValleyBell/libvgm)
 - [sox-emscripten](https://github.com/rameshvarun/sox-emscripten)
-- [game_music_emu](https://github.com/libgme/game-music-emu)
