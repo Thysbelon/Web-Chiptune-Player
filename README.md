@@ -5,14 +5,13 @@ You can play back a song with infinite looping, 2 loops and a fade. You can gene
 
 It is currently a work in progress. It can play:
 
-- SPC
-- PSF
-- NSF
-- NSFE
-- GBS
-- AY
-- SAP
-- HES
+- SPC (Super Famicom/SNES)
+- PSF (PlayStation 1 Sequenced Music)
+- NSF & NSFE (Famicom/NES) 
+- GBS (Game Boy)
+- AY (ZX Spectrum, Amstrad CPC)
+- SAP (Atari)
+- HES (PC Engine/TurboGrafx-16)
 
 This repository will be a combination of all my other web chiptune repositories.
 
