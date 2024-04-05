@@ -20,7 +20,8 @@ function isOddIndex(element, index, array) {
 	return !Number.isInteger(index/2);
 }
 
-function seekToLoopStart(e){ // an event handler that will be added to the 'timeupdate' event of <audio>s generated with makeChiptuneAudioElement. end event is too slow to fire. NOTE: This feature does not work how I intended. The looping is supposed to be seamless, but there is always a delay when seeking an <audio> element. Help with this would be appreciated.
+function seekToLoopStart(e){ // an event handler that will be added to the 'timeupdate' event of infinitely looping <audio>s generated with makeChiptuneAudioElement, in order to loop the song. end event is too slow to fire. NOTE: This feature does not work how I intended. The looping is supposed to be seamless, but there is always a delay when seeking an <audio> element. Help with this would be appreciated.
+// One idea I have to fix this is to play the infinitely looping chiptune using a web audio buffer, with the audio element just acting as controls for the audio buffer via many event handlers. Web audio buffers always loop their audio seamlessly.
 	//console.log('timeupdate fired');
 	if (e.target.currentTime<=e.target.duration && e.target.currentTime>=e.target.duration-0.3) {
 		//console.log('seeking to loopStart...')
@@ -106,7 +107,6 @@ async function prepareInput(input, arrayBool, fileBool){
 		//console.log(tempArray);
 		var chiptuneFiles=[];
 		for (let i=0, l=tempArray.length; i<l; i++) {
-			//const fileBool=tempArray[i]?.name ? true : false;
 			chiptuneFiles[i]={}
 			chiptuneFiles[i].filename=fileBool ? tempArray[i].name : decodeURI(tempArray[i].replace(/.*\//, ''));
 			chiptuneFiles[i].fileData=fileBool ? await tempArray[i].arrayBuffer() : await fetchChiptune(tempArray[i]);
@@ -142,28 +142,9 @@ use case of this, I have omitted it for now.
 spc: requires: renderLength (or else it will default to a minute). optional: speed
 vgm: optional: speed, debugShortLength (vgm files always have the correct length and intro length specified in the file. There should be no need to allow the user of Web-Chiptune-Player to enter their own lengths)
 psf: optional: renderLength
-
-the spc player *could* have a spc metadata reader added
-to it to read spc length, but many spcs define length
-as the length of two loops, with no intro length nor
-fade length defined. trying to cut the length in half
-is very likely to result in some spcs getting the song
-cut off.
-Also, the id6 format (spc metadata) is a mess; it can
-be text or binary with no indication of which format is
-being used.
-
-psf player attempts to read the length from the
-psf file, but the length is often two loops long.
-psf does not define intro length, so this makes it
-impossible to programmatically determine the length of a
-single loop.
-
-gsf player likely has the same problem as the psf player
 TODO: add length limiter to gsf player
 */
 // settings={track: 0 /* some single chiptune files contain multiple tracks */, renderLength/*milliseconds*/, introLength: 0, loops: 'infinite', fade: 0 /*no effect when loop is infinite*/, speed: 1 /*unaltered speed*/}
-// TODO: add "panning" setting. This will allow the user to pan each voice of a mono chip. A common use case is taking the NES, which only outputs audio in mono, and panning Square 1 left and Square 2 right. The "panning" setting will not support stereo systems.
 // TODO: add "worker" setting. This setting will run the C modules (which take the longest to run) in a separate worker thread, to keep the webpage responsive. This will likely be accomplished by adding a conditional to the runCModule function (playGME will need work as well).
 // TODO: make sure none of the c files have a totalFrames calculation bug; use type casting to uint64.
 async function playChiptune(input/* can be a fileInput file or a url*/, settings) {
@@ -186,40 +167,34 @@ async function playChiptuneHandler(e){ // use this function as the "play" event 
 	e.target.removeEventListener('play', playChiptuneHandler);
 	e.target.removeEventListener('play', playChiptuneHandler, true);
 	e.target.onplay=undefined;
-	const input=e.target.dataset.chiptune.includes(' ') ? e.target.dataset.chiptune.split(' ') : e.target.dataset.chiptune
+	//const input=e.target.dataset.chiptune.includes(' ') ? e.target.dataset.chiptune.split(' ') : e.target.dataset.chiptune // assuming that every url input with a space is two urls is too dangerous.
+	// to specify multiple URLs for .lib files, type an array into the data-chiptune field in JSON notation.
+	let inputParsedAsJSON;
+	try {
+		inputParsedAsJSON=JSON.parse(e.target.dataset.chiptune);
+	} catch (error) {
+		console.info('input could not be parsed as JSON: '+error+'\nThis is likely because the input is not JSON');
+	}
+	const input=Array.isArray(inputParsedAsJSON) ? inputParsedAsJSON : e.target.dataset.chiptune
 	console.log('input: '+input);
 	const settings={};
 	for (let setting of settingsList) {
-		settings[setting]=e.target.dataset[setting.toLowerCase()] ? (parseInt(e.target.dataset[setting.toLowerCase()]) ? parseInt(e.target.dataset[setting.toLowerCase()]) : e.target.dataset[setting.toLowerCase()]) : undefined;
-		console.log(e.target.dataset[setting.toLowerCase()])
+		const tempSetting=e.target.dataset[setting.toLowerCase()] ? e.target.dataset[setting.toLowerCase()] : e.target.dataset[setting] // accept both data-introlength and data-intro-length
+		if (tempSetting) {
+			settings[setting]=parseInt(tempSetting) ? parseInt(tempSetting) : tempSetting
+		}
+		//settings[setting]=e.target.dataset[setting.toLowerCase()] ? (parseInt(e.target.dataset[setting.toLowerCase()]) ? parseInt(e.target.dataset[setting.toLowerCase()]) : e.target.dataset[setting.toLowerCase()]) : undefined;
+		console.log(tempSetting)
 		console.log('settings.'+setting+': '+typeof settings[setting]+' '+settings[setting])
 	}
+	settings.panning=e.target.dataset.panning ? JSON.parse(e.target.dataset.panning) : undefined;
+	console.log(settings.panning);
 	const newAudioElem=await makeChiptuneAudioElement(input, settings)
 	e.target.replaceWith(newAudioElem);
 	console.log('dummy audio element replaced');
 	newAudioElem.play()
 }
 async function internal_playChiptune(input/* can be a fileInput file, a url, or an array of either of these*/, settings, mode='simplePlay') {
-	//if (typeof input[0] == 'object'/* a FileList is technically not an Array */ || Array.isArray(input)) {
-	//	console.log('input is an array')
-	//	var arrayBool=true;
-	//	const tempArray=Array.from(input); // make sure FileList becomes an array, and gains all the methods of the Array object.
-	//	//console.log(tempArray);
-	//	var chiptuneFiles=[];
-	//	var fileBool=tempArray[0]?.name ? true : false; // assume both members of the array are the same type.
-	//	for (let i=0, l=tempArray.length; i<l; i++) {
-	//		//const fileBool=tempArray[i]?.name ? true : false;
-	//		chiptuneFiles[i]={}
-	//		chiptuneFiles[i].filename=fileBool ? tempArray[i].name : decodeURI(tempArray[i].replace(/.*\//, ''));
-	//		chiptuneFiles[i].fileData=fileBool ? await tempArray[i].arrayBuffer() : await fetchChiptune(tempArray[i]);
-	//	}
-	//	var filename=chiptuneFiles.find(element => (!element.filename.match(/\....lib$/) )).filename;
-	//} else {
-	//	console.log('input is not an array')
-	//	var fileBool=input?.name ? true : false;
-	//	var filename=fileBool ? input.name : decodeURI(input.replace(/.*\//, ''));
-	//	var fileData=fileBool ? await input.arrayBuffer() : await fetchChiptune(input);
-	//}
 	var arrayBool=(typeof input[0] == 'object'/* a FileList is technically not an Array */ || Array.isArray(input));
 	var fileBool=getFileBool(input, arrayBool);
 	var filename=getInputName(input, arrayBool, fileBool);
@@ -272,7 +247,12 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 			break;
 		case '.vgm':
 		case '.vgz':
-			//console.error('vgm not yet implemented.'); throw new TypeError(); return;
+			if (settings?.renderLength || settings?.introLength) {
+				console.warn('VGM files always contain an accurate renderLength and introLength in their metadata. User defined lengths will be discarded');
+				settings.renderLength=undefined;
+				settings.introLength=undefined;
+				//console.info(settings.introLength+', '+settings.renderLength);
+			}
 			if (arrayBool){var fileData=chiptuneFiles[0].fileData}
 			cPlayerOutput=await playVGM(fileData, settings);
 			break;
@@ -335,7 +315,7 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 			break;
 		case '.gbs':
 		case '.hes':
-			if (settings?.panning) {console.error('panning is only for mono consoles.'); throw new TypeError(); return}
+			if (settings?.panning) {console.warn('panning is only for mono consoles. Removing user panning settings...'); /*throw new TypeError(); return*/ settings.panning=undefined}
 		case '.nsf':
 		case '.nsfe':
 		case '.ay':
@@ -414,7 +394,7 @@ async function playPSF(chiptuneFiles, settings){
 	psfOutput.pcmdata=tempPCMdata;
 	return psfOutput;
 }
-async function playGSF(fileData, settings){
+async function playGSF(fileData, settings){ //TODO: add length limiter to gsf player in c code
 
 }
 async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO DO: onceInPage support?
@@ -424,7 +404,6 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 		console.log('GMEdata is null. writing...');
 		GMEdata.prevChiptuneFileName=filename;
 		GMEdata.prevFileBool=fileBool;
-		//GMEdata.prevPanningBool=null;
 		if (GMEdata.gmeModule==null) {GMEdata.gmeModule=await createGMEmodule();}
 		if (GMEdata.c_generatePCMfileAndReturnInfo==null) {GMEdata.c_generatePCMfileAndReturnInfo=GMEdata.gmeModule.cwrap('generatePCMfileAndReturnInfo', 'string', ['number', 'number', 'boolean', 'boolean', 'boolean']);}
 		//GMEdata.gmeWorker=null;
@@ -447,14 +426,12 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 	gmeOutput.introLength=parseInt(info.shift());
 
 	if (settings?.panning) {
-		//gmeOutput.pcmdata=pcmDataArrays
 		gmeOutput.stereo=true;
 		const renderLength=( settings?.renderLength ? settings.renderLength : gmeOutput.renderLength ) / 1000;
 		const actx=new OfflineAudioContext({sampleRate: gmeOutput.sampleRate, numberOfChannels: 2, length: renderLength*gmeOutput.sampleRate});
 		const sourceNodeArray={};
 		const pannerNodeArray={};
 		for (voice in settings.panning) {
-			//pcmDataArrays[voice]=(new Int16Array(gmeModule.FS.readFile(`/${voice}.raw`).buffer)).filter(isEvenIndex)
 			const audioBuffer=new AudioBuffer({length: renderLength*actx.sampleRate, numberOfChannels: 1, sampleRate:actx.sampleRate});
 			audioBuffer.copyToChannel(Int16toFloat32((new Int16Array(gmeModule.FS.readFile(`/${voice}.raw`).buffer)).filter(isEvenIndex)), 0);
 			sourceNodeArray[voice]=new AudioBufferSourceNode(actx, {loop: false, loopEnd: renderLength, channelCount: 1, buffer: audioBuffer});
@@ -463,7 +440,6 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 			pannerNodeArray[voice].connect(actx.destination);
 			sourceNodeArray[voice].start(0); // time shouldn't pass until I start rendering.
 		}
-		//pcmDataArrays.theRest=(new Int16Array(gmeModule.FS.readFile(`/theRest.raw`).buffer)).filter(isEvenIndex)
 		const audioBufferTheRest=new AudioBuffer({length: renderLength*actx.sampleRate, numberOfChannels: 1, sampleRate:actx.sampleRate});
 		audioBufferTheRest.copyToChannel(Int16toFloat32( (new Int16Array(gmeModule.FS.readFile(`/theRest.raw`).buffer)).filter(isEvenIndex) ), 0);
 		sourceNodeTheRest=new AudioBufferSourceNode(actx, {loop: false, loopEnd: renderLength, channelCount: 1, buffer: audioBufferTheRest});
@@ -531,9 +507,6 @@ async function simplePlayMusic(cPlayerOutput, settings, returnBuffer=false, inpu
 	}
 	const actx=returnBuffer ? new OfflineAudioContext({sampleRate: cPlayerOutput.sampleRate, numberOfChannels: channelCount, length: (0.1 + introLength + (renderLength-introLength) * loops + fade)*cPlayerOutput.sampleRate}) : new AudioContext({sampleRate: cPlayerOutput.sampleRate});
 	if (returnBuffer==false) {currentlyPlayingWebAudioMusic=actx};
-	//var newPCMdata=Int16toFloat32(cPlayerOutput.pcmdata);
-	//if (cPlayerOutput.stereo) {newPCMdata=[newPCMdata.filter(isEvenIndex), newPCMdata.filter(isOddIndex)]};
-	//const audioBuffer= createAudioBufferAndFill(channelCount, renderLength*actx.sampleRate, newPCMdata, actx);
 	if (inputAudioBuffer) {
 		var audioBuffer=inputAudioBuffer;
 	} else {

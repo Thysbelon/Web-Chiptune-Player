@@ -5,7 +5,7 @@
 <meta name=color-scheme content="dark light">
 <meta name=viewport content=width=device-width,initial-scale=1.0>
 <script src=web/sox/sox.js></script>
-<script src=web/Web-GSF-Player/gsf2wav.js></script> <!-- remember to set the right script -->
+<script src=web/Web-GSF-Player/gsf2wav.js></script>
 <script src=web/Web-PSF-Player/Web-PSF-Player.js></script>
 <script src=web/Web-VGM-Player/Web-VGM-Player.js></script>
 <script src=web/Web-SPC-Player/Web-SPC-Player.js></script>
@@ -13,32 +13,44 @@
 <script src=web/web-chiptune-functions.js></script>
 </head>
 <body>
-<p>Feel free to use the console to test the other functions in the library.
-<br>
+<h1>Web-Chiptune-Player Demo</h1>
+<figure>
+<figcaption>
+Chiptune audio element: when you press play, the chiptune will start rendering. (song: <a href=https://www.youtube.com/watch?v=5JHgFbqGtBM target=_blank>Blast Processing Power by Ivan YO</a>)
+</figcaption>
+<audio controls data-chiptune="test-music/test.vgz"></audio>
+</figure>
+<figure>
+<figcaption>
+You can take the channels of a mono console and pan them left and right to make the audio stereo.
+</figcaption>
+<audio controls data-chiptune="test-music/liquid-sunshine (Namco 163).nsfe" data-intro-length='1331' data-panning='{"Square 1":-1,"Square 2":1,"Wave 8":-0.5,"Wave 7":0.5}' data-loops='2' data-fade='3000'></audio>
+</figure>
+<figure>
+<figcaption>
+You can loop a single chiptune infinitely. (currently only supported well for simple Web Audio buffer playback. I would like to support infinite looping for audio elements, but I ran into performance issues)
+</figcaption>
+<button id=demo3>play</button>
+</figure>
+<section>
+<h2>Test basic playback of music</h2>
 <label for="song-select-file">Upload a song:</label>
 <input type=file id="song-select-file" multiple />
-<button>Run</button>
-<br>
-<figure>
-<figcaption>
-SPC audio element with fade out demonstration
-</figcaption>
-<audio controls data-chiptune="test-music/plok-03.spc" data-introLength='1000' data-renderLength='2000' data-loops='2' data-fade='1000'></audio> <!-- these introLength and renderLength values are placeholders -->
-</figure>
-<figure>
-<figcaption>
-PSF audio element with infinite looping demonstration (<strong>warning: loud</strong>)
-</figcaption>
-<audio controls data-chiptune="test-music/klonoa/Cronoa008.psf test-music/klonoa/driver.psflib" data-introLength='1000' data-renderLength='2000' data-loops='infinite'></audio>
-</figure>
+<button id=simple-play>simple-play</button>
+<button id=stop-simple-play>stop simple-play</button>
+</section>
+<p>Feel free to use the console to test the other functions in the library.
 <script>
-function wrapper() {
+function wrapperSimplePlay() {
 	var fileInput=document.getElementById("song-select-file")
 	playChiptune(fileInput.files)
-	//playChiptune(['test-music/klonoa/Cronoa008.psf', 'test-music/klonoa/driver.psflib'])
-	//playChiptune('test-music/102 The Brink of Death.psf')
 }
-document.querySelector("button").addEventListener("click", wrapper)
+function wrapperDemo3() {
+	playChiptune('test-music/mmc5-test.nsfe', {loops: 'infinite', panning:{"Square 1":-1, "Square 2":1, "Square 3":-1, "Square 4":1}})
+}
+document.querySelector("button#simple-play").addEventListener("click", wrapperSimplePlay)
+document.querySelector("button#stop-simple-play").addEventListener("click", stopCurrentlyPlayingMusic)
+document.querySelector("button#demo3").addEventListener("click", wrapperDemo3)
 
 document.querySelectorAll("audio[data-chiptune]").forEach(element => element.addEventListener('play', playChiptuneHandler))
 </script>

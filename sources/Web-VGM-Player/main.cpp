@@ -630,7 +630,7 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 	}
 	
 	//set_core(plrEngine,DEVID_NES_APU,FCC_NSFP);
-	//set_core(plrEngine,DEVID_NES_APU,FCC_MAME); // this seems to handle "using the DPCM to lower the volume of the triangle" better than the NSFP nes core. // however, it seems to be bad with everything else, and has lots of peaking.
+	//set_core(plrEngine,DEVID_NES_APU,FCC_MAME); // this seems to handle "using the DPCM to lower the volume of the triangle" better than the NSFP nes core. // however, it seems to be worse with other music, and has lots of peaking.
 	if (useMameForFC) {
 		set_core(plrEngine,DEVID_NES_APU,FCC_MAME);
 	}
