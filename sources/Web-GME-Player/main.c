@@ -87,7 +87,7 @@ char* generatePCMfileAndReturnInfo(int track, uint8_t speed /*not sure if there 
 		printf("An emulator does not already exist.\n");
 		createNewEmu(newSampleRate);
 	}
-	
+
 	gme_info_t* info;
 	gme_track_info( emu, &info, track );
 	int length=info->length;
@@ -104,7 +104,7 @@ char* generatePCMfileAndReturnInfo(int track, uint8_t speed /*not sure if there 
 	int loopStart=info->intro_length;
 	printf("current emulator is %s\n", info->system);
 	gme_free_info(info);
-	
+
 	int8_t totalVoices=gme_voice_count( emu );
 	printf("totalVoices: %d\n", totalVoices );
 	const uint16_t framesPerBuffer=1024; // maybe framesPerBuffer and bufferSize should stay between runs of a multitrack file
@@ -148,8 +148,8 @@ char* generatePCMfileAndReturnInfo(int track, uint8_t speed /*not sure if there 
 		for (int8_t i=0; i<totalVoicesToSeparate; ++i) {
 			if (gme_tell(emu)>0) {gme_seek( emu, 0 );}
 			//"pcmOut01.raw"
-			char filename[13];
-			snprintf(filename, 13, "pcmOut%d.raw", voicesToSeparate[i]);
+			char filename[15];
+			snprintf(filename, 15, "%s.raw", gme_voice_name(emu, voicesToSeparate[i])); // name the files after the voice name; "Square 1.raw"
 			gme_mute_voices( emu, -1 ); // mute all voices
 			gme_mute_voice( emu, voicesToSeparate[i], 0 ); // unmute
 			//pcmOut[i]=fopen(filename, "wb")
@@ -175,7 +175,7 @@ char* generatePCMfileAndReturnInfo(int track, uint8_t speed /*not sure if there 
 			gme_mute_voice( emu, voicesToSeparate[i], 1 ); // mute
 		}
 		FILE* pcmOut;
-		pcmOut=fopen("pcmOut.raw", "wb");
+		pcmOut=fopen("theRest.raw", "wb"); // contains all unpanned voices.
 		fillFileWithSamples(pcmOut, emu, framesPerBuffer, totalFrames, bufferSize);
 	} else {
 		printf("multichannel is false\n");
@@ -196,27 +196,34 @@ char* generatePCMfileAndReturnInfo(int track, uint8_t speed /*not sure if there 
 	}
 	fclose(pcmOut);
 	*/
-	
+
 	length=((float)length/speed)*100; // speed adjusted length for javascript audiobuffers and nodes
 	// max length string (could be reduced slightly with hex): "2147483647, 2147483647, 0, 13, Square 1, Square 2, Triangle, Noise, DMC, Wave 1, Wave 2, Wave 3, Wave 4, Wave 5, Wave 6, Wave 7, Wave 8"
-	const uint8_t trackInfoSize=26; // the null terminator is a character.
+	//const uint8_t trackInfoSize=/*26*/30; // the null terminator is a character.
+	const uint8_t trackInfoSize=26;
 	char trackInfo[trackInfoSize]; // information that js will need to gen audiobuffers and nodes
 	snprintf( trackInfo, trackInfoSize, "%d, %d, %d", length, loopStart, stereo );
+	printf("length, loopStart, and stereo stored.\n");
+	/*
 	if (multichannel) {
 		char tempTotalVoices[5]; // the null terminator is a character.
+		printf("tempTotalVoices created.\n");
 		snprintf( tempTotalVoices, 5, ", %i", totalVoices );
+		printf("totalVoices saved to tempTotalVoices.\n");
 		strcat( trackInfo, tempTotalVoices );
+		printf("tempTotalVoices concatenated with trackInfo.\n");
 		for (int i=0;i<totalVoices;++i) {
 			strcat( trackInfo, ", " );
 			strcat( trackInfo, gme_voice_name( emu, i ) );
 		}
 	}
-	
+	*/
+
 	if (!multitrack) {gme_delete( emu );}
-	
+
 	//if (onceInPage) {emscripten_force_exit(0);} // I believe trackInfo should still be returned to JS. If not, we can write trackInfo to another file.
 	// WARNING: the pcm file will probably deleted after emscripten_force_exit is called.
-	
+
 	return trackInfo; // Wreturn-stack-address shouldn't be an issue because this is going straight to JavaScript.
 }
 

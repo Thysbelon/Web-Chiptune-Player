@@ -334,12 +334,11 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 			console.error('ZX Spectrum module file not supported due to ZXtune not being implemented.'); throw new TypeError(); return;
 			break;
 		case '.gbs':
-		case '.hes':
-			if (settings?.panning) {console.error('panning is only for mono consoles.'); throw new TypeError(); return}
 		case '.nsf':
 		case '.nsfe':
 		case '.ay':
 		case '.sap':
+		case '.hes':
 			/* all of these file formats also happen to be multitrack */
 			//console.error('This file type is not supported due to game_music_emu not being implemented yet.'); throw new TypeError(); return;
 			if (arrayBool){var fileData=chiptuneFiles[0].fileData}
@@ -350,10 +349,10 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 	}
 	switch (mode) { // do something with cPlayerOutput.
 		case 'simplePlay':
-			simplePlayMusic(cPlayerOutput, settings) // uses the web audio api to play a single pcm file (with looping)
+			if (settings?.panning) {simplePlayMusic(cPlayerOutput, settings, false, await renderMultiChannelToAudioBuffer(cPlayerOutput, settings))} else {simplePlayMusic(cPlayerOutput, settings)} // uses the web audio api to play a single pcm file (with looping)
 			break;
 		case 'wav':
-			simpleDownloadMusic(filename, cPlayerOutput, settings) // uses SOX to add a WAVE header to the PCM data. if the data is already WAVE (and program default lengths are being used) the file will be downloaded unaltered?
+			if (settings?.panning) {simpleDownloadMusic(filename, cPlayerOutput, settings, await renderMultiChannelToAudioBuffer(cPlayerOutput, settings))} else {simpleDownloadMusic(filename, cPlayerOutput, settings)} // uses SOX to add a WAVE header to the PCM data. if the data is already WAVE (and program default lengths are being used) the file will be downloaded unaltered?
 			break;
 		case 'audioElem':
 			return await cOutputToAudioElem(cPlayerOutput, settings);
@@ -362,7 +361,6 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 
 async function playSPC(fileData, settings){
 	console.log('playing SPC file.');
-	if (settings?.panning) {console.error('panning is only for mono consoles.')}
 	var renderLength=0, speed=100;
 	if (settings?.renderLength) {
 		renderLength=settings.renderLength;
@@ -379,7 +377,6 @@ async function playSPC(fileData, settings){
 }
 async function playVGM(fileData, settings){ // this should support panning. https://github.com/ValleyBell/libvgm/issues/80#issuecomment-976217329
 	// TODO: add panning support. libvgm has built-in panning support. mmontag's fork of libvgm might be used as a guide.
-	if (settings?.panning) {console.error('WebVGMplayer does not yet support panning. It is on the to-do list.')}
 	const rawOutput=await runCModule(null, [{filename: 'input', fileData: fileData}], [{filename: 'vgmPcmOut.raw', encoding: 'binary'}, {filename: 'info.txt', encoding:'utf8'}], 'WebVGMplayer');
 	console.info('info.txt: '+rawOutput[1].fileData);
 	const vgmInfo=rawOutput[1].fileData.split(', ').map(elem => parseInt(elem));
@@ -390,7 +387,6 @@ async function playVGM(fileData, settings){ // this should support panning. http
 	return vgmOutput;
 }
 async function playPSF(chiptuneFiles, settings){
-	if (settings?.panning) {console.error('panning is only for mono consoles.')}
 	console.log('playing PSF file.');
 	// TODO: edit main.c file to write the psf file's length and fade to a txt file. clean up main.c.
 	if (settings?.speed) {console.warn('"speed" is set, but the PSF player does not support the speed setting.')}
@@ -417,7 +413,7 @@ async function playPSF(chiptuneFiles, settings){
 async function playGSF(fileData, settings){
 
 }
-async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO DO: onceInPage support?
+async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TODO: panning. onceInPage support?
 	// if panning, the generated files should be named after the voices.
 	console.log('playing GME file.');
 	if (GMEdata.prevChiptuneFileName==null) {
@@ -440,45 +436,28 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 	speed=Math.round(speed*100);
 	//console.log('speed: '+speed);
 	var info=c_generatePCMfileAndReturnInfo(settings?.track ? settings.track : 0, speed, diffEmu, settings?.panning ? true : false, false/*onceInPage*/)
+	if (settings?.panning) {
+		var pcmDataArrays={};
+		for (voice in settings.panning) {
+			pcmDataArrays[voice]=(new Int16Array(gmeModule.FS.readFile(`/${voice}.raw`).buffer)).filter(isEvenIndex)
+		}
+		pcmDataArrays.theRest=(new Int16Array(gmeModule.FS.readFile(`/theRest.raw`).buffer)).filter(isEvenIndex)
+	} else {
+		var pcmUint8Array=gmeModule.FS.readFile('/pcmOut.raw')
+		var pcmInt16Array=new Int16Array(pcmUint8Array.buffer)
+	}
 	info=info.split(', ')
 	const gmeOutput={sampleRate: 44100}
 	gmeOutput.renderLength=parseInt(info.shift());
 	console.log('file renderLength: '+gmeOutput.renderLength);
 	gmeOutput.introLength=parseInt(info.shift());
-
+	gmeOutput.stereo=parseInt(info.shift()) ? true : false;
 	if (settings?.panning) {
-		//gmeOutput.pcmdata=pcmDataArrays
-		gmeOutput.stereo=true;
-		const renderLength=( settings?.renderLength ? settings.renderLength : gmeOutput.renderLength ) / 1000;
-		const actx=new OfflineAudioContext({sampleRate: gmeOutput.sampleRate, numberOfChannels: 2, length: renderLength*gmeOutput.sampleRate});
-		const sourceNodeArray={};
-		const pannerNodeArray={};
-		for (voice in settings.panning) {
-			//pcmDataArrays[voice]=(new Int16Array(gmeModule.FS.readFile(`/${voice}.raw`).buffer)).filter(isEvenIndex)
-			const audioBuffer=new AudioBuffer({length: renderLength*actx.sampleRate, numberOfChannels: 1, sampleRate:actx.sampleRate});
-			audioBuffer.copyToChannel(Int16toFloat32((new Int16Array(gmeModule.FS.readFile(`/${voice}.raw`).buffer)).filter(isEvenIndex)), 0);
-			sourceNodeArray[voice]=new AudioBufferSourceNode(actx, {loop: false, loopEnd: renderLength, channelCount: 1, buffer: audioBuffer});
-			pannerNodeArray[voice]=new StereoPannerNode(actx, {pan:settings.panning[voice]});
-			sourceNodeArray[voice].connect(pannerNodeArray[voice]);
-			pannerNodeArray[voice].connect(actx.destination);
-			sourceNodeArray[voice].start(0); // time shouldn't pass until I start rendering.
-		}
-		//pcmDataArrays.theRest=(new Int16Array(gmeModule.FS.readFile(`/theRest.raw`).buffer)).filter(isEvenIndex)
-		const audioBufferTheRest=new AudioBuffer({length: renderLength*actx.sampleRate, numberOfChannels: 1, sampleRate:actx.sampleRate});
-		audioBufferTheRest.copyToChannel(Int16toFloat32( (new Int16Array(gmeModule.FS.readFile(`/theRest.raw`).buffer)).filter(isEvenIndex) ), 0);
-		sourceNodeTheRest=new AudioBufferSourceNode(actx, {loop: false, loopEnd: renderLength, channelCount: 1, buffer: audioBufferTheRest});
-		sourceNodeTheRest.connect(actx.destination);
-		sourceNodeTheRest.start(0); // time shouldn't pass until I start rendering.
-		var newPCMdata = await actx.startRendering();
-		gmeOutput.pcmdata=Float32toInt16(interleaveLRsampleArrays(newPCMdata.getChannelData(0), newPCMdata.getChannelData(1))) // whatever
+		gmeOutput.pcmdata=pcmDataArrays
 	} else {
-		gmeOutput.stereo=parseInt(info.shift()) ? true : false;
-		var pcmUint8Array=gmeModule.FS.readFile('/pcmOut.raw')
-		var pcmInt16Array=new Int16Array(pcmUint8Array.buffer)
 		gmeOutput.pcmdata=gmeOutput.stereo ? pcmInt16Array : pcmInt16Array.filter(isEvenIndex)/* gme always renders 2 channel pcm, even when the system is mono. */
 	}
 	//console.log('gmeOutput.stereo '+gmeOutput.stereo)
-
 	return gmeOutput;
 }
 function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles, /*string*/moduleName){ // outputFiles example: [{filename: 'pcmOut.raw', encoding: 'binary'}]. inputFiles example: [{filename: 'input.spc', filedata: anArrayBuffer}, {filename: 'otherFile.txt', fileData: 'text content'}]
@@ -561,12 +540,63 @@ async function simplePlayMusic(cPlayerOutput, settings, returnBuffer=false, inpu
 	if (loops && loops != 'infinite') {console.log('setting end for sourceNode'); sourceNode.stop(actx.currentTime+0.1 + introLength + (renderLength-introLength) * loops + fade)}
 	if (returnBuffer) {return await actx.startRendering()}
 }
-async function simpleDownloadMusic(filename, cPlayerOutput, settings){
+async function renderMultiChannelToAudioBuffer(cPlayerOutput, settings){ // won't have any looping or fading // may only apply to GME, because libvgm has built-in panning.
+	const renderLength=( settings?.renderLength ? settings.renderLength : cPlayerOutput.renderLength ) / 1000;
+	const actx=new OfflineAudioContext({sampleRate: cPlayerOutput.sampleRate, numberOfChannels: 2, length: renderLength*cPlayerOutput.sampleRate});
+	//const sourceNodeArray=[];
+	const sourceNodeArray={};
+	//const pannerNodeArray=[];
+	const pannerNodeArray={};
+	//for (let i=0, l=cPlayerOutput.pcmdata.length; i<l; i++){
+	// TODO: place redundant code in a function
+	for (const voice in settings.panning) {
+		const audioBuffer=new AudioBuffer({length: renderLength*actx.sampleRate, numberOfChannels: 1, sampleRate:actx.sampleRate});
+		audioBuffer.copyToChannel(Int16toFloat32(cPlayerOutput.pcmdata[voice]), 0);
+		//sourceNodeArray[i]
+		sourceNodeArray[voice]=new AudioBufferSourceNode(actx, {loop: false, loopEnd: renderLength, channelCount: 1, buffer: audioBuffer});
+		//pannerNodeArray[i]
+		pannerNodeArray[voice]=new StereoPannerNode(actx, {pan:settings.panning[voice]});
+		sourceNodeArray[voice].connect(pannerNodeArray[voice]);
+		pannerNodeArray[voice].connect(actx.destination);
+		sourceNodeArray[voice].start(0); // time shouldn't pass until I start rendering.
+	}
+	const audioBufferTheRest=new AudioBuffer({length: renderLength*actx.sampleRate, numberOfChannels: 1, sampleRate:actx.sampleRate});
+	audioBufferTheRest.copyToChannel(Int16toFloat32(cPlayerOutput.pcmdata.theRest), 0);
+	sourceNodeTheRest=new AudioBufferSourceNode(actx, {loop: false, loopEnd: renderLength, channelCount: 1, buffer: audioBufferTheRest});
+	sourceNodeTheRest.connect(actx.destination);
+	sourceNodeTheRest.start(0); // time shouldn't pass until I start rendering.
+	return await actx.startRendering();
+}
+/*
+function createAudioBufferAndFill(numChannels, bufferLength, pcmdata, audioCtx) {
+	const pcmdataBuffer=audioCtx.createBuffer(
+		numChannels,
+		bufferLength,
+		audioCtx.sampleRate
+	);
+	if (numChannels===2) {
+		for (let channel=0; channel<numChannels; channel++) {
+			fillAudioBufferWithPCMData(pcmdataBuffer, pcmdata[channel], bufferLength, channel)
+		}
+	} else {
+		fillAudioBufferWithPCMData(pcmdataBuffer, pcmdata, bufferLength, 0)
+	}
+	return pcmdataBuffer
+}
+
+function fillAudioBufferWithPCMData(pcmdataBuffer, pcmdata, bufferLength, channel) {
+	const nowBuffering=pcmdataBuffer.getChannelData(channel)
+	for (let i = 0; i < bufferLength; i++) {
+		nowBuffering[i]=pcmdata[i]
+	}
+}
+*/
+async function simpleDownloadMusic(filename, cPlayerOutput, settings, inputAudioBuffer){
 	if ((settings?.loops || settings?.fade) && settings?.loops!='infinite') {
 		console.log('finite loops or a fade is set. rendering audio buffer...');
-		var renderedAudioBuffer=await simplePlayMusic(cPlayerOutput, settings, true);
+		var renderedAudioBuffer=inputAudioBuffer ? await simplePlayMusic(cPlayerOutput, settings, true, inputAudioBuffer) : await simplePlayMusic(cPlayerOutput, settings, true);
 	} else {console.log('no finite loops or a fade was set: '+settings?.loops+', '+settings?.fade)}
-	const wavFileDataURL=await createWavDataURL(renderedAudioBuffer ? interleaveLRsampleArrays(renderedAudioBuffer.getChannelData(0), renderedAudioBuffer.getChannelData(1)) : cPlayerOutput.pcmdata, cPlayerOutput, settings);
+	const wavFileDataURL=await createWavDataURL(renderedAudioBuffer ? interleaveLRsampleArrays(renderedAudioBuffer.getChannelData(0), renderedAudioBuffer.getChannelData(1)) : (inputAudioBuffer ? interleaveLRsampleArrays(inputAudioBuffer.getChannelData(0), inputAudioBuffer.getChannelData(1)) : cPlayerOutput.pcmdata), cPlayerOutput, settings);
 
 	const link = document.createElement('a')
 	const url = wavFileDataURL
@@ -580,13 +610,13 @@ async function simpleDownloadMusic(filename, cPlayerOutput, settings){
 	window.URL.revokeObjectURL(url)
 }
 
-async function cOutputToAudioElem(cPlayerOutput, settings){
+async function cOutputToAudioElem(cPlayerOutput, settings, inputAudioBuffer){
 	console.log('running cOutputToAudioElem');
 	if ((settings?.loops || settings?.fade) && settings?.loops!='infinite') {
 		console.log('finite loops or a fade is set. rendering audio buffer...');
 		var renderedAudioBuffer=await simplePlayMusic(cPlayerOutput, settings, true);
 	} else {console.log('no finite loops or a fade was set: '+settings?.loops+', '+settings?.fade)}
-	const wavFileDataURL=await createWavDataURL(renderedAudioBuffer ? interleaveLRsampleArrays(renderedAudioBuffer.getChannelData(0), renderedAudioBuffer.getChannelData(1)) : cPlayerOutput.pcmdata, cPlayerOutput, settings);
+	const wavFileDataURL=await createWavDataURL(renderedAudioBuffer ? interleaveLRsampleArrays(renderedAudioBuffer.getChannelData(0), renderedAudioBuffer.getChannelData(1)) : (inputAudioBuffer ? interleaveLRsampleArrays(inputAudioBuffer.getChannelData(0), inputAudioBuffer.getChannelData(1)) : cPlayerOutput.pcmdata), cPlayerOutput, settings);
 	console.log('creating audio element...');
 	var audioElem=document.createElement('audio');
 	audioElem.controls='controls';

@@ -1,0 +1,1 @@
+The wasm binary uses the main [ValleyBell/libvgm](https://github.com/ValleyBell/libvgm) repository, **with the addition of mmontag's [player_wrapper.cpp](https://github.com/mmontag/chip-player-js/blob/master/libvgm/player/player_wrapper.cpp) file**, and the file added to the CMakeLists.txt of the `player` directory.

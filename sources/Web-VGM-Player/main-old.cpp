@@ -105,435 +105,13 @@ const bool getStereo(PlayerBase *plrEngine) {
 //static const char *
 //extensible_guid_trailer= "\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71";
 
-/* // libvgm does not seem to have its own getVoiceName function, so I'll have to manually set each index to a voice name.
-const char* getVoiceName(UINT8 devId, UINT8 voiceIndex) {
-	switch (devId) {
-		case DEVID_32X_PWM:
-			switch (voiceIndex) {
-				case 0:
-					return "PWM";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_32X_PWM: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_AY8910:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_AY8910: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_C140:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_C140: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_C219:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_C219: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_C352:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_C352: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_C6280:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_C6280: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_ES5503:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_ES5503: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_ES5506:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_ES5506: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_GA20:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_GA20: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_GB_DMG:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_GB_DMG: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_K051649:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_K051649: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_K053260:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_K053260: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_K054539:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_K054539: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_MIKEY:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_MIKEY: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_NES_APU:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_NES_APU: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_OKIM6258:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_OKIM6258: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_OKIM6295:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_OKIM6295: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_POKEY:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_POKEY: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_QSOUND:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_QSOUND: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_RF5C68:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_RF5C68: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_SAA1099:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_SAA1099: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_SCSP:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_SCSP: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_SEGAPCM:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_SEGAPCM: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_SN76496:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_SN76496: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_uPD7759:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_uPD7759: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_VBOY_VSU:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_VBOY_VSU: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_WSWAN:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_WSWAN: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_X1_010:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_X1_010: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_Y8950:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_Y8950: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM2151:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM2151: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM2203:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM2203: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM2413:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM2413: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM2608:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM2608: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM2610:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM2610: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM2612:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM2612: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM3526:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM3526: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YM3812:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YM3812: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YMF262:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YMF262: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YMF271:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YMF271: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YMF278B:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YMF278B: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YMW258:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YMW258: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		case DEVID_YMZ280B:
-			switch (voiceIndex) {
-				case 0:
-					return "placeholder";
-					break;
-				default:
-					fprintf(stderr, "getVoiceName: DEVID_YMZ280B: Unknown voiceIndex.\n");
-					return "";
-			}
-			break;
-		default:
-			fprintf(stderr, "getVoiceName: Unknown device.\n");
-			return "";
+
+uint8_t voiceNameToNum(char* voiceName, int8_t totalVoices) {
+	for (uint8_t i=0; i<totalVoices; ++i) {
+		printf("Comparing strings: %s and %s\n", lvgm_get_voice_name(emu, i), voiceName);
+		if ( strstr(voiceName, lvgm_get_voice_name(emu, i))!=NULL ) {printf("Strings are the same\n"); return i;}
 	}
 }
-*/
 
 //EMSCRIPTEN_KEEPALIVE
 int main(int argc, const char *argv[]) { // write pcm file & info file
@@ -544,8 +122,6 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 	printf("debugShortLength: %d\n", debugShortLength); // 1 is true
 	const bool multiChannel = atoi(argv[3]); // if multiChannel is true, read the voices to separate from a voices.txt file.
 	printf("multiChannel: %d\n", multiChannel); // 1 is true
-	const bool useMameForFC = atoi(argv[4]); // if multiChannel is true, read the voices to separate from a voices.txt file.
-	printf("useMameForFC: %d\n", useMameForFC); // 1 is true
 	const uint8_t channels = 2; // to do: set this with the getStereo function
 	
 	PlayerA player;
@@ -631,18 +207,14 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 	}
 	
 	//set_core(plrEngine,DEVID_NES_APU,FCC_NSFP);
-	//set_core(plrEngine,DEVID_NES_APU,FCC_MAME); // this seems to handle "using the DPCM to lower the volume of the triangle" better than the NSFP nes core. // however, it seems to be bad with everything else, and has lots of peaking.
-	if (useMameForFC) {
-		set_core(plrEngine,DEVID_NES_APU,FCC_MAME);
-	}
+	set_core(plrEngine,DEVID_NES_APU,FCC_MAME); // this seems to handle "using the DPCM to lower the volume of the triangle" better than the NSFP nes core.
 
 	//write chiptune metadata information that JS might need to a txt file.
 	// system (for mono or stereo). tag 9
 	// song length
 	// loop point
-	//const bool stereo=getStereo(plrEngine);
+	const bool stereo=getStereo(plrEngine);
 	// to do: if possible, set the player's channel settings based on the stereo bool
-	const bool stereo=true; // I will remove this 'true' when I finish the getStereo function.
 	
 	/* need to call Start before calls like Tick2Sample or
 	 * checking any kind of timing info, because
@@ -668,7 +240,6 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 	const uint8_t ElSizeXchannels=ElSize * channels;
 	
 	if (multiChannel) {
-		/*
 		FILE* voicesFile;
 		voicesFile=fopen("voices.txt", "r");
 		if (voicesFile==NULL) {
@@ -687,8 +258,6 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 		fclose(voicesFile);
 		uint8_t totalVoicesToSeparate=voicesFileIndex;
 		printf("totalVoicesToSeparate: %i\n", totalVoicesToSeparate);
-		*/
-		// libvgm has its own panning feature. TODO: investigate.
 	} else {
 		FILE* vgmPcmOut;
 		vgmPcmOut = fopen("vgmPcmOut.raw","wb");
@@ -724,14 +293,6 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 	DataLoader_Deinit(loader);
 	
 	// write info file
-	printf("raw loopTick from file: %d\n", loopStart);
-	length=(UINT64)((UINT64)length*(UINT64)1000)/44100;
-	if (loopStart == -1) {
-		loopStart=0;
-	} else {
-		loopStart=(UINT64)((UINT64)loopStart*(UINT64)1000)/44100;
-		loopStart=length-loopStart;
-	}
 	FILE* infoFile;
 	infoFile = fopen("info.txt","w");
 	fprintf(infoFile, "%d, %u, %d", stereo, length, loopStart);
