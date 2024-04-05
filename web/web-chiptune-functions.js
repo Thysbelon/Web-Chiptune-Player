@@ -380,7 +380,7 @@ async function playSPC(fileData, settings){
 async function playVGM(fileData, settings){ // this should support panning. https://github.com/ValleyBell/libvgm/issues/80#issuecomment-976217329
 	// TODO: add panning support. libvgm has built-in panning support. mmontag's fork of libvgm might be used as a guide.
 	if (settings?.panning) {console.error('WebVGMplayer does not yet support panning. It is on the to-do list.')}
-	const rawOutput=await runCModule(null, [{filename: 'input', fileData: fileData}], [{filename: 'vgmPcmOut.raw', encoding: 'binary'}, {filename: 'info.txt', encoding:'utf8'}], 'WebVGMplayer');
+	const rawOutput=await runCModule(settings?.vgmFCuseMAME ? ['0','0','0','1'] : null, [{filename: 'input', fileData: fileData}], [{filename: 'vgmPcmOut.raw', encoding: 'binary'}, {filename: 'info.txt', encoding:'utf8'}], 'WebVGMplayer');
 	console.info('info.txt: '+rawOutput[1].fileData);
 	const vgmInfo=rawOutput[1].fileData.split(', ').map(elem => parseInt(elem));
 	//const pcmData=vgmInfo[0] ? new Int16Array(rawOutput[0].fileData.buffer) : (new Int16Array(rawOutput[0].fileData.buffer)).filter(isEvenIndex);

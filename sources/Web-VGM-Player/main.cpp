@@ -1,6 +1,5 @@
 // copies a lot from libvgm vgm2wav.c demo
 // wav functionality removed because it seems the least risky to put as much code as possible into JavaScript. And sox-emscripten seems more flexible anyway
-// to do: CHANGE THIS TO JUST A SINGLE ONESHOT MAIN FUNCTION; It should be called from JavaScript like sox-emscripten
 /* need to link with:
  * vgm-player
  * vgm-emu
@@ -544,7 +543,7 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 	printf("debugShortLength: %d\n", debugShortLength); // 1 is true
 	const bool multiChannel = atoi(argv[3]); // if multiChannel is true, read the voices to separate from a voices.txt file.
 	printf("multiChannel: %d\n", multiChannel); // 1 is true
-	const bool useMameForFC = atoi(argv[4]); // if multiChannel is true, read the voices to separate from a voices.txt file.
+	const bool useMameForFC = atoi(argv[4]);
 	printf("useMameForFC: %d\n", useMameForFC); // 1 is true
 	const uint8_t channels = 2; // to do: set this with the getStereo function
 	
