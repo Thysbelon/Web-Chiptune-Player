@@ -20,8 +20,8 @@ It is currently a work in progress. It can play:
 	- SAP (Atari)
 	- HES (PC Engine/TurboGrafx-16)
 
-Instead of rendering the song while the user is listening to it, which can result in poor audio quality on mobile and other low-end hardware; Web-Chiptune-Player renders one whole loop of the song and *then* plays the music (looping is done after the song has rendered). The trade-off is that you'll have to wait a few seconds before the song starts, but the quality should always be good.
-Many chiptune files (except vgm & vgz) do not have the correct length in their metadata; thus, to use Web-Chiptune-Player to its full potential, please always input the correct renderLength (the length of one loop, including intro) and introLength (the length of just the intro).
+Instead of rendering the song while the user is listening to it, which can result in poor audio quality on mobile and other low-end hardware; Web-Chiptune-Player renders one whole loop of the song and *then* plays the music (looping is done after the song has rendered). The trade-off is that you'll have to wait a few seconds before the song starts, but the quality should always be good.  
+Many chiptune files (except vgm & vgz) do not have the correct length in their metadata; thus, to use Web-Chiptune-Player to its full potential, please always input the correct renderLength (the length of one loop, including intro) and introLength (the length of just the intro).  
 (Note: the above does not apply to non-looping songs)
 
 This repository will be a combination of all my other web chiptune repositories.
