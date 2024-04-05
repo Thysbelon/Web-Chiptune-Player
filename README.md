@@ -26,7 +26,7 @@ Many chiptune files (except vgm & vgz) do not have the correct length in their m
 
 This repository will be a combination of all my other web chiptune repositories.
 
-To learn more, please view the [demo]().
+To learn more, please view the [demo](https://thysbelon.github.io/Web-Chiptune-Player/demo.html).
 
 ## Folders
 ### web
