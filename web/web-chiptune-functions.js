@@ -85,6 +85,7 @@ const settingsList=[
 	'loops',
 	'fade',
 	'speed',
+	'vgmFCuseMAME'
 ]
 
 const GMEdata={
