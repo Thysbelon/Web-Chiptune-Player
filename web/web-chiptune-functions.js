@@ -178,7 +178,6 @@ async function makeChiptuneAudioElement(input, settings) { // returns the create
 	return await internal_playChiptune(input, settings, 'audioElem');
 }
 async function playChiptuneHandler(e){ // use this function as the "play" event handler for a dummy audio element to turn it into a chiptune player when the user hits play.
-	// syntax of the data-chiptune attribute of a dummy audio element: data-chiptune="https://my-url/my-song.psf https://my-url/driver.psflib"
 	// a dummy audio element should only contain urls as input. I don't think there's a use case for somehow allowing Files.
 	// This will only run once for each dummy audio element
 	console.log('running playChiptuneHandler');
@@ -210,6 +209,11 @@ async function playChiptuneHandler(e){ // use this function as the "play" event 
 	settings.panning=e.target.dataset.panning ? JSON.parse(e.target.dataset.panning) : undefined;
 	console.log(settings.panning);
 	const newAudioElem=await makeChiptuneAudioElement(input, settings)
+	// add some original attributes to the newAudioElem here
+	newAudioElem.style=e.target.style.cssText;
+	newAudioElem.controlsList=e.target.controlsList;
+	newAudioElem.crossOrigin=e.target.crossOrigin;
+	newAudioElem.disableRemotePlayback=e.target.disableRemotePlayback;
 	e.target.replaceWith(newAudioElem);
 	console.log('dummy audio element replaced');
 	newAudioElem.play()
