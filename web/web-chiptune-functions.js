@@ -1,9 +1,21 @@
+function addPlayEventsToAudioElems(){
+	document.querySelectorAll("audio[data-chiptune]").forEach(element => element.addEventListener('play', playChiptuneHandler))
+}
+if (document.readyState === "loading") { // add events to all chiptune audio elements the moment this script is loaded
+  // Loading hasn't finished yet
+  document.addEventListener("DOMContentLoaded", addPlayEventsToAudioElems);
+} else {
+  // `DOMContentLoaded` has already fired
+  addPlayEventsToAudioElems();
+}
+
 async function fetchChiptune(url) {
 	const response = await fetch(url);
   const chiptune = await response.arrayBuffer();
 	return chiptune;
 }
 
+/*
 const cModuleIndex={
 	WebSPCplayer: WebSPCplayer ? WebSPCplayer : undefined,
 	WebVGMplayer: WebVGMplayer ? WebVGMplayer : undefined,
@@ -11,6 +23,13 @@ const cModuleIndex={
 	WebGSFplayer: WebGSFplayer ? WebGSFplayer : undefined,
 	SOXModule: SOXModule ? SOXModule : undefined,
 }
+*/
+const cModuleIndex={}
+try {cModuleIndex.WebSPCplayer = WebSPCplayer} catch (error) {console.warn('no WebSPCplayer, '+error); cModuleIndex.WebSPCplayer=undefined}
+try {cModuleIndex.WebVGMplayer = WebVGMplayer} catch (error) {console.warn('no WebVGMplayer, '+error); cModuleIndex.WebVGMplayer=undefined}
+try {cModuleIndex.WebPSFplayer = WebPSFplayer} catch (error) {console.warn('no WebPSFplayer, '+error); cModuleIndex.WebPSFplayer=undefined}
+try {cModuleIndex.WebGSFplayer = WebGSFplayer} catch (error) {console.warn('no WebGSFplayer, '+error); cModuleIndex.WebGSFplayer=undefined}
+try {cModuleIndex.SOXModule = SOXModule} catch (error) {console.warn('no SOXModule, '+error); cModuleIndex.SOXModule=undefined}
 
 // input functions for array.prototype.filter()
 function isEvenIndex(element, index, array) {
