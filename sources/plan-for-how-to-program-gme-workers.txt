@@ -1,0 +1,12 @@
+default behavior:
+	if the user attempts to play a gme file type:
+		create a worker thread
+		save the gme binary file to the worker thread
+		start and save the emscripten instance to the worker thread
+		render pcm data in the worker thread
+		send pcm data to main thread for playback (or whatever)
+		
+		if the user attempts to play a different track from the same file:
+			reuse the emscripten instance and binary file that are already in the worker thread
+			render pcm data in the worker thread
+			send pcm data to main thread for playback (or whatever)
