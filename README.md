@@ -32,8 +32,8 @@ To learn more, please view the [demo](https://thysbelon.github.io/Web-Chiptune-P
 ### web
 This folder contains only the files you need to put on your website to use the library.
 
-### test-music
-This folder contains various chiptune files that I use to test the library
+### docs
+This folder contains the demo; the test-music folder contains various chiptune files that I use to test the library.
 
 ### sources
 This folder contains the c source code of the Emscripten modules used in the library.
