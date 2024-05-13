@@ -1,4 +1,16 @@
 ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+if (typeof isWorker == 'undefined') {isWorker=false};
+
+// for CDNs.
+if (isWorker==false) { // TODO: make this better
+	console.log('fetching workers...');
+	fetchWorker(ROOT_URL+"chiptune-worker.js").then((result) => {
+		chiptuneWorker=result;
+	})
+	fetchWorker(ROOT_URL+"Web-GME-Player/gme-worker.js").then((result) => {
+		gmeWorker=result;
+	})
+}
 
 try {
 	function addPlayEventsToAudioElems(){
@@ -15,10 +27,20 @@ try {
 	console.warn('could not add event listeners to audio elems, '+error);
 }
 
-async function fetchChiptune(url) {
+async function fetchFile(url) {
 	const response = await fetch(url);
-  const chiptune = await response.arrayBuffer();
-	return chiptune;
+  const myFile = await response.arrayBuffer();
+	return myFile;
+}
+
+async function fetchChiptune(url) {
+	return await fetchFile(url);
+}
+
+async function fetchWorker(url) {
+	const response = await fetch(url);
+  const myFile = await response.text();
+	return btoa(myFile);
 }
 
 const cModuleIndex={}
@@ -421,7 +443,7 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 		console.log('GMEdata is null. writing...');
 		GMEdata.prevChiptuneFileName=filename;
 		GMEdata.prevFileBool=fileBool;
-		GMEdata.gmeWorker=new Worker(ROOT_URL+'Web-GME-Player/gme-worker.js');
+		GMEdata.gmeWorker=new Worker(`data:text/javascript;base64,${gmeWorker}`);
 	}
 	console.log(GMEdata.prevChiptuneFileName);
 	
@@ -467,7 +489,7 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles, /*string*/moduleName, /*boolean*/worker, /*boolean*/workerFileLoc){ // outputFiles example: [{filename: 'pcmOut.raw', encoding: 'binary'}]. inputFiles example: [{filename: 'input.spc', filedata: anArrayBuffer}, {filename: 'otherFile.txt', fileData: 'text content'}]
 	if (worker) {
 		return new Promise(function(resolve, reject) {
-			const cModuleWorker=new Worker(ROOT_URL+'chiptune-worker.js');
+			const cModuleWorker=new Worker(`data:text/javascript;base64,${chiptuneWorker}`);
 			cModuleWorker.addEventListener('message', function(e){
 				console.info("Message received from cModuleWorker");
 				cModuleWorker.terminate();

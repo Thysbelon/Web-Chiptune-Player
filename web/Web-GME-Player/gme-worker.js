@@ -1,4 +1,5 @@
 ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+isWorker=true;
 importScripts(ROOT_URL+"Web-GME-Player/Web-GME-Player.js");
 importScripts(ROOT_URL+"web-chiptune-functions.js");
 
