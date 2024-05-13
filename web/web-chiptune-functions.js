@@ -467,7 +467,7 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles, /*string*/moduleName, /*boolean*/worker, /*boolean*/workerFileLoc){ // outputFiles example: [{filename: 'pcmOut.raw', encoding: 'binary'}]. inputFiles example: [{filename: 'input.spc', filedata: anArrayBuffer}, {filename: 'otherFile.txt', fileData: 'text content'}]
 	if (worker) {
 		return new Promise(function(resolve, reject) {
-			const cModuleWorker=new Worker(ROOT_URL+'Web-Chiptune-Player/chiptune-worker.js');
+			const cModuleWorker=new Worker(ROOT_URL+'chiptune-worker.js');
 			cModuleWorker.addEventListener('message', function(e){
 				console.info("Message received from cModuleWorker");
 				cModuleWorker.terminate();
