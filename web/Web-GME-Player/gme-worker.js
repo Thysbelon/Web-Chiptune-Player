@@ -1,5 +1,6 @@
-importScripts("Web-GME-Player.js");
-importScripts("../web-chiptune-functions.js");
+ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+importScripts(ROOT_URL+"Web-GME-Player/Web-GME-Player.js");
+importScripts(ROOT_URL+"web-chiptune-functions.js");
 
 /*const*/ GMEdata={
 	prevChiptuneFileName: null,
