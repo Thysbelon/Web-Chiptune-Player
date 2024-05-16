@@ -1,4 +1,5 @@
 ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+//ROOT_URL="http://localhost:8000/web/";
 isWorker=true;
 importScripts(ROOT_URL+"Web-GME-Player/Web-GME-Player.js");
 importScripts(ROOT_URL+"web-chiptune-functions.js");
@@ -27,7 +28,13 @@ onmessage = async function(e) {
 	const [filename, fileBool, fileData, settings, diffEmu] = e.data;
 	console.log(fileData);
 	if (GMEdata.gmeModule==null) {
-		GMEdata.gmeModule=await createGMEmodule();
+		const module={}
+		module.locateFile=function(path, prefix){
+			var wasmLoc = ROOT_URL + path.replace('.wasm', '') + '/' + path;
+			console.log("wasmLoc: "+wasmLoc)
+			return wasmLoc;
+		}
+		GMEdata.gmeModule=await createGMEmodule(module);
 		//GMEdata.gmeModule.FS.writeFile('/home/web_user/input', e.data[2]);
 		GMEdata.gmeModule.FS.writeFile('/home/web_user/input', new Uint8Array(fileData));
 		GMEdata.c_generatePCMfileAndReturnInfo=GMEdata.gmeModule.cwrap('generatePCMfileAndReturnInfo', 'string', ['number', 'number', 'boolean', 'boolean', 'boolean']);
@@ -41,7 +48,7 @@ onmessage = async function(e) {
 	var speed=settings?.speed ? settings.speed : 1;
 	speed=Math.round(speed*100);
 	console.time("GME_C_Timer");
-	console.timeLog("GME_C_Timer", "Rendering PCM…");
+	console.timeLog("GME_C_Timer", "Rendering PCM...");
 	var info=GMEdata.c_generatePCMfileAndReturnInfo(settings?.track ? settings.track : 0, speed, diffEmu, settings?.panning ? true : false, false/*onceInPage*/);
 	console.timeEnd("GME_C_Timer");
 	info=info.split(', ');

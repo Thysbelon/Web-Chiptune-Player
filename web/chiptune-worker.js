@@ -1,4 +1,5 @@
 ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+//ROOT_URL="http://localhost:8000/web/";
 isWorker=true;
 try {importScripts(ROOT_URL+"Web-PSF-Player/Web-PSF-Player.js");} catch (error) {console.warn('no WebPSFplayer, '+error);}
 try {importScripts(ROOT_URL+"Web-SPC-Player/Web-SPC-Player.js");} catch (error) {console.warn('no WebSPCplayer, '+error);}

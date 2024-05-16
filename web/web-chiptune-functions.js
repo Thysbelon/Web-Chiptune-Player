@@ -1,15 +1,19 @@
 ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+//ROOT_URL="http://localhost:8000/web/";
 if (typeof isWorker == 'undefined') {isWorker=false};
 
 // for CDNs.
 if (isWorker==false) { // TODO: make this better
 	console.log('fetching workers...');
-	fetchWorker(ROOT_URL+"chiptune-worker.js").then((result) => {
-		chiptuneWorker=result;
+	Promise.all([fetchWorker(ROOT_URL+"chiptune-worker.js"), fetchWorker(ROOT_URL+"Web-GME-Player/gme-worker.js")]).then((result) => {
+		chiptuneWorker=result[0];
+		gmeWorker=result[1];
+		console.log('workers fetched');
 	})
-	fetchWorker(ROOT_URL+"Web-GME-Player/gme-worker.js").then((result) => {
-		gmeWorker=result;
-	})
+	//fetchWorker(ROOT_URL+"Web-GME-Player/gme-worker.js").then((result) => {
+	//	gmeWorker=result;
+	//	console.log('gme-worker fetched');
+	//})
 }
 
 try {
@@ -40,7 +44,8 @@ async function fetchChiptune(url) {
 async function fetchWorker(url) {
 	const response = await fetch(url);
   const myFile = await response.text();
-	return btoa(myFile);
+	const myBase64 = btoa(myFile);
+	return myBase64
 }
 
 const cModuleIndex={}
@@ -519,10 +524,12 @@ function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles,
 			if (workerFileLoc) {
 				module.locateFile=function(path, prefix){
 					if (path.includes('gsf2wav')) {
-						return prefix + 'Web-GSF-Player/' + path;
+						var wasmLoc = ROOT_URL + 'Web-GSF-Player/' + path;
 					} else {
-						return prefix + path.replace('.wasm', '') + '/' + path;
+						var wasmLoc = ROOT_URL + path.replace('.wasm', '') + '/' + path;
 					}
+					console.log("wasmLoc: "+wasmLoc)
+					return wasmLoc;
 				}
 			}
 			cModuleIndex[moduleName](module)
