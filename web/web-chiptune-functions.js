@@ -188,7 +188,6 @@ psf: optional: renderLength
 TODO: add length limiter to gsf player
 */
 // settings={track: 0 /* some single chiptune files contain multiple tracks */, renderLength/*milliseconds*/, introLength: 0, loops: 'infinite', fade: 0 /*no effect when loop is infinite*/, speed: 1 /*unaltered speed*/}
-// TODO: add "worker" setting. This setting will run the C modules (which take the longest to run) in a separate worker thread, to keep the webpage responsive. This will likely be accomplished by adding a conditional to the runCModule function (playGME will need work as well).
 // TODO: make sure none of the c files have a totalFrames calculation bug; use type casting to uint64.
 async function playChiptune(input/* can be a fileInput file or a url*/, settings) {
 	await stopCurrentlyPlayingMusic();
@@ -417,7 +416,6 @@ async function playVGM(fileData, settings, workerBool){ // this should support p
 async function playPSF(chiptuneFiles, settings, workerBool){
 	if (settings?.panning) {console.error('panning is only for mono consoles.')}
 	console.log('playing PSF file.');
-	// TODO: edit main.c file to write the psf file's length and fade to a txt file. clean up main.c.
 	if (settings?.speed) {console.warn('"speed" is set, but the PSF player does not support the speed setting.')}
 	const args=['input.psf'];
 	if (settings?.renderLength) {
@@ -440,7 +438,28 @@ async function playPSF(chiptuneFiles, settings, workerBool){
 	return psfOutput;
 }
 async function playGSF(fileData, settings){ //TODO: add length limiter to gsf player in c code
-
+    if (settings?.panning) {console.error('panning is only for mono consoles.')}
+	console.info('playing GSF file.');
+	if (settings?.speed) {console.warn('"speed" is set, but the GSF player does not support the speed setting.')}
+	const args=['input.gsf'];
+	if (settings?.renderLength) {
+		args.push(settings.renderLength.toString());
+	}
+	var inputFiles=[];
+	if (Array.isArray(chiptuneFiles)) {
+		inputFiles=chiptuneFiles;
+		const psfIndex=inputFiles.findIndex(element => (element.filename.match(/\.gsf$/) || element.filename.match(/\.minigsf$/) ));
+		inputFiles[psfIndex].filename='input.gsf'; // TODO: make sure this doesn't cause issues with .minipsf files.
+	} else {
+		inputFiles=[{filename: 'input.gsf', fileData: chiptuneFiles}]
+	}
+	console.log(inputFiles);
+	const rawOutput=await runCModule(args, inputFiles, [{filename: 'gsfPcmOut.raw', encoding: 'binary'}, {filename: 'info.txt', encoding:'utf8'}], 'WebGSFplayer', workerBool);
+	const psfOutput={sampleRate: 44100, stereo: true, renderLength: parseInt(rawOutput[1].fileData.split(', ')[0]), fade: parseInt(rawOutput[1].fileData.split(', ')[1])}
+	var tempPCMdata=rawOutput[0];
+	tempPCMdata=new Int16Array(tempPCMdata.fileData.buffer)
+	psfOutput.pcmdata=tempPCMdata;
+	return psfOutput;
 }
 async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO DO: onceInPage support?
 	console.log('playing GME file.');

@@ -1,8 +1,8 @@
 #!/usr/bin/bash
-wget https://github.com/jprjr/gsf2wav/archive/refs/heads/main.zip
-unzip main.zip
-rm main.zip
-mv gsf2wav-main gsf2wav
+#wget https://github.com/jprjr/gsf2wav/archive/refs/heads/main.zip
+#unzip main.zip
+#rm main.zip
+#mv gsf2wav-main gsf2wav
 wget https://github.com/jprjr/lazygsf/archive/refs/heads/main.zip -O gsf2wav/main.zip
 unzip gsf2wav/main.zip -d gsf2wav/
 rm gsf2wav/main.zip
