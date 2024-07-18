@@ -287,7 +287,7 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 			break;
 		case '.spc':
 			if (arrayBool){var fileData=chiptuneFiles[0].fileData}
-			cPlayerOutput=await playSPC(fileData, settings);
+			cPlayerOutput=await playSPC(fileData, settings, workerBool);
 			break;
 		case '.vgm':
 		case '.vgz':
