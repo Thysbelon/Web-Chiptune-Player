@@ -28,9 +28,11 @@ This repository will be a combination of all my other web chiptune repositories.
 
 To learn more, please view the [demo](https://thysbelon.github.io/Web-Chiptune-Player/demo.html).
 
+To see an example of how this library would be used on a real website, please [view this chiptune blog post](https://thysbelon.github.io/Blog/2024-4-6/Heartful-Cry-(Persona-3)-2A03-Cover-(and-Web-Chiptune-Player)).
+
 ## Folders
 ### web
-This folder contains only the files you need to put on your website to use the library.
+This folder contains only the files you need to put on your website to use the library, **if you wish to self-host**. Currently, the library is hard-coded to be used from the CDN jsDelivr.
 
 ### docs
 This folder contains the demo; the test-music folder contains various chiptune files that I use to test the library.

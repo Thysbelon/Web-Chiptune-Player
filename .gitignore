@@ -1,2 +1,3 @@
-sources/Web-GSF-Player/gsf2wav
+sources/Web-GSF-Player/gsf2wav/lazygsf
+sources/Web-GSF-Player/gsf2wav/psflib
 *.kate-swp
