@@ -3,17 +3,8 @@ ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
 if (typeof isWorker == 'undefined') {isWorker=false};
 
 // for CDNs.
-if (isWorker==false) { // TODO: make this better
-	console.log('fetching workers...');
-	Promise.all([fetchWorker(ROOT_URL+"chiptune-worker.js"), fetchWorker(ROOT_URL+"Web-GME-Player/gme-worker.js")]).then((result) => {
-		chiptuneWorker=result[0];
-		gmeWorker=result[1];
-		console.log('workers fetched');
-	})
-	//fetchWorker(ROOT_URL+"Web-GME-Player/gme-worker.js").then((result) => {
-	//	gmeWorker=result;
-	//	console.log('gme-worker fetched');
-	//})
+if (isWorker==false) {
+	var storedWorkers={chiptuneWorker:undefined, gmeWorker:undefined};
 }
 
 try {
@@ -467,7 +458,8 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 		console.log('GMEdata is null. writing...');
 		GMEdata.prevChiptuneFileName=filename;
 		GMEdata.prevFileBool=fileBool;
-		GMEdata.gmeWorker=new Worker(`data:text/javascript;base64,${gmeWorker}`);
+		if (storedWorkers.gmeWorker==undefined) {console.time("fetchGMEWorker"); storedWorkers.gmeWorker = await fetchWorker(ROOT_URL+"Web-GME-Player/gme-worker.js"); console.timeEnd("fetchGMEWorker");}
+		GMEdata.gmeWorker=new Worker(`data:text/javascript;base64,${storedWorkers.gmeWorker}`);
 	}
 	console.log(GMEdata.prevChiptuneFileName);
 	
@@ -512,14 +504,16 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 }
 function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles, /*string*/moduleName, /*boolean*/useWorker, /*boolean*/workerFileLoc){ // outputFiles example: [{filename: 'pcmOut.raw', encoding: 'binary'}]. inputFiles example: [{filename: 'input.spc', filedata: anArrayBuffer}, {filename: 'otherFile.txt', fileData: 'text content'}]
 	if (useWorker) { // creates a worker from the main thread, then that worker runs runCModule.
-		return new Promise(function(resolve, reject) {
-			const cModuleWorker=new Worker(`data:text/javascript;base64,${chiptuneWorker}`);
+		return new Promise(async/*appears to work fine*/ function(resolve, reject) {
+			if (storedWorkers.chiptuneWorker==undefined) {console.time("fetchWorker"); storedWorkers.chiptuneWorker = await fetchWorker(ROOT_URL+"chiptune-worker.js"); console.timeEnd("fetchWorker");}
+			const cModuleWorker=new Worker(`data:text/javascript;base64,${storedWorkers.chiptuneWorker}`);
 			cModuleWorker.addEventListener('message', function(e){
 				console.info("Message received from cModuleWorker");
 				cModuleWorker.terminate();
 				resolve(e.data);
 			}, {once:true});
 			cModuleWorker.postMessage(['runCModule', [args, inputFiles, outputFiles, moduleName]])
+			
 		})
 	} else { // the code to run a c module. When this was first written, it functioned on both the main thread and a worker. Now, it may only function in a worker.
 		console.time("runCModule");
