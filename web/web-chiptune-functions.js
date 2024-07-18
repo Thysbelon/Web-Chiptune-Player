@@ -50,11 +50,11 @@ async function fetchWorker(url) {
 
 const cModuleIndex={}
 // TODO: turn these repetitive statements into an array of strings and a loop.
-try {cModuleIndex.WebSPCplayer = WebSPCplayer} catch (error) {console.warn('no WebSPCplayer, '+error); cModuleIndex.WebSPCplayer=undefined}
-try {cModuleIndex.WebVGMplayer = WebVGMplayer} catch (error) {console.warn('no WebVGMplayer, '+error); cModuleIndex.WebVGMplayer=undefined}
-try {cModuleIndex.WebPSFplayer = WebPSFplayer} catch (error) {console.warn('no WebPSFplayer, '+error); cModuleIndex.WebPSFplayer=undefined}
-try {cModuleIndex.WebGSFplayer = WebGSFplayer} catch (error) {console.warn('no WebGSFplayer, '+error); cModuleIndex.WebGSFplayer=undefined}
-try {cModuleIndex.SOXModule = SOXModule} catch (error) {console.warn('no SOXModule, '+error); cModuleIndex.SOXModule=undefined}
+//try {cModuleIndex.WebSPCplayer = WebSPCplayer} catch (error) {console.warn('no WebSPCplayer, '+error); cModuleIndex.WebSPCplayer=undefined}
+//try {cModuleIndex.WebVGMplayer = WebVGMplayer} catch (error) {console.warn('no WebVGMplayer, '+error); cModuleIndex.WebVGMplayer=undefined}
+//try {cModuleIndex.WebPSFplayer = WebPSFplayer} catch (error) {console.warn('no WebPSFplayer, '+error); cModuleIndex.WebPSFplayer=undefined}
+//try {cModuleIndex.WebGSFplayer = WebGSFplayer} catch (error) {console.warn('no WebGSFplayer, '+error); cModuleIndex.WebGSFplayer=undefined}
+//try {cModuleIndex.SOXModule = SOXModule} catch (error) {console.warn('no SOXModule, '+error); cModuleIndex.SOXModule=undefined}
 
 // input functions for array.prototype.filter()
 function isEvenIndex(element, index, array) {
@@ -510,8 +510,8 @@ async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO D
 		})
 	}
 }
-function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles, /*string*/moduleName, /*boolean*/worker, /*boolean*/workerFileLoc){ // outputFiles example: [{filename: 'pcmOut.raw', encoding: 'binary'}]. inputFiles example: [{filename: 'input.spc', filedata: anArrayBuffer}, {filename: 'otherFile.txt', fileData: 'text content'}]
-	if (worker) {
+function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles, /*string*/moduleName, /*boolean*/useWorker, /*boolean*/workerFileLoc){ // outputFiles example: [{filename: 'pcmOut.raw', encoding: 'binary'}]. inputFiles example: [{filename: 'input.spc', filedata: anArrayBuffer}, {filename: 'otherFile.txt', fileData: 'text content'}]
+	if (useWorker) { // creates a worker from the main thread, then that worker runs runCModule.
 		return new Promise(function(resolve, reject) {
 			const cModuleWorker=new Worker(`data:text/javascript;base64,${chiptuneWorker}`);
 			cModuleWorker.addEventListener('message', function(e){
@@ -521,9 +521,17 @@ function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles,
 			}, {once:true});
 			cModuleWorker.postMessage(['runCModule', [args, inputFiles, outputFiles, moduleName]])
 		})
-	} else {
-		const startTime=performance.now();
+	} else { // the code to run a c module. When this was first written, it functioned on both the main thread and a worker. Now, it may only function in a worker.
+		console.time("runCModule");
 		return new Promise(function(resolve, reject) {
+			if (cModuleIndex?.[moduleName]==undefined) {
+				if (self?.[moduleName]) {
+					cModuleIndex[moduleName] = self[moduleName]
+				} else {
+					//console.warn('no '+moduleName);
+					reject(new Error("Can't run a c module that can't be accessed ("+moduleName+")"));
+				}
+			}
 			const module = {
 				arguments: args,
 				preRun: () => {
@@ -536,21 +544,25 @@ function runCModule(/*array*/ args, /*array*/ inputFiles, /*array*/ outputFiles,
 					for (let i=0, l=outputFiles.length; i<l; i++) {
 						toResolve[i]={filename: outputFiles[i].filename, fileData: module.FS.readFile(outputFiles[i].filename, {encoding: outputFiles[i].encoding})}; // encoding can be 'binary' or 'utf8'
 					}
-					console.log(moduleName+' performance: '+(performance.now() - startTime)+'ms')
+					console.timeEnd("runCModule");
 					resolve(toResolve);
 				}
 			}
 			if (workerFileLoc) {
+				const WASM_ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+				// attempting to load wasm from localhost *always* results in a NetworkError. I don't know why. My workaround will be to test C Modules and JavaScript separately.
+				// This NetworkError doesn't seem to affect Sox. It's likely because sox is being run on the main thread.
 				module.locateFile=function(path, prefix){
 					if (path.includes('gsf2wav')) {
-						var wasmLoc = ROOT_URL + 'Web-GSF-Player/' + path;
+						var wasmLoc = WASM_ROOT_URL + 'Web-GSF-Player/' + path;
 					} else {
-						var wasmLoc = ROOT_URL + path.replace('.wasm', '') + '/' + path;
+						var wasmLoc = WASM_ROOT_URL + path.replace('.wasm', '') + '/' + path;
 					}
 					console.log("wasmLoc: "+wasmLoc)
 					return wasmLoc;
 				}
 			}
+			console.timeLog("runCModule", "module ready to run.");
 			cModuleIndex[moduleName](module)
 		})
 	}

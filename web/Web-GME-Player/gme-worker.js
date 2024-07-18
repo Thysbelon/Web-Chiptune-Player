@@ -30,7 +30,7 @@ onmessage = async function(e) {
 	if (GMEdata.gmeModule==null) {
 		const module={}
 		module.locateFile=function(path, prefix){
-			var wasmLoc = ROOT_URL + path.replace('.wasm', '') + '/' + path;
+			var wasmLoc = "https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/" + path.replace('.wasm', '') + '/' + path;
 			console.log("wasmLoc: "+wasmLoc)
 			return wasmLoc;
 		}
