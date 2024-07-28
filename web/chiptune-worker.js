@@ -7,6 +7,7 @@ const moduleAndFilenameTable={
 	WebSPCplayer: 'Web-SPC-Player/Web-SPC-Player.js',
 	WebVGMplayer: 'Web-VGM-Player/Web-VGM-Player.js',
 	WebPSFplayer: 'Web-PSF-Player/Web-PSF-Player.js',
+	WebGSFplayer: 'Web-GSF-Player/gsf2wav.js',
 	SOXModule: 'sox/sox.js',
 }
 importScripts(ROOT_URL+"web-chiptune-functions.js");

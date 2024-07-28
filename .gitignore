@@ -1,3 +1,5 @@
 sources/Web-GSF-Player/gsf2wav/lazygsf
 sources/Web-GSF-Player/gsf2wav/psflib
+sources/Web-GSF-Player/gsf2wav/build-local
+sources/Web-GSF-Player/gsf2wav/build-emscripten
 *.kate-swp

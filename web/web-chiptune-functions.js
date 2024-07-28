@@ -299,7 +299,7 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 			break;
 		case '.gsf':
 		case '.minigsf':
-			console.error('gsf not yet implemented.'); throw new TypeError(); return;
+			//console.error('gsf not yet implemented.'); throw new TypeError(); return;
 			cPlayerOutput=await playGSF(arrayBool ? chiptuneFiles : fileData, settings, workerBool);
 			break;
 		case '.usf':
@@ -428,8 +428,8 @@ async function playPSF(chiptuneFiles, settings, workerBool){
 	psfOutput.pcmdata=tempPCMdata;
 	return psfOutput;
 }
-async function playGSF(fileData, settings){ //TODO: add length limiter to gsf player in c code
-    if (settings?.panning) {console.error('panning is only for mono consoles.')}
+async function playGSF(chiptuneFiles, settings, workerBool){
+	if (settings?.panning) {console.error('panning is only for mono consoles.')}
 	console.info('playing GSF file.');
 	if (settings?.speed) {console.warn('"speed" is set, but the GSF player does not support the speed setting.')}
 	const args=['input.gsf'];
@@ -440,17 +440,18 @@ async function playGSF(fileData, settings){ //TODO: add length limiter to gsf pl
 	if (Array.isArray(chiptuneFiles)) {
 		inputFiles=chiptuneFiles;
 		const psfIndex=inputFiles.findIndex(element => (element.filename.match(/\.gsf$/) || element.filename.match(/\.minigsf$/) ));
-		inputFiles[psfIndex].filename='input.gsf'; // TODO: make sure this doesn't cause issues with .minipsf files.
+		inputFiles[psfIndex].filename='input.gsf';
 	} else {
 		inputFiles=[{filename: 'input.gsf', fileData: chiptuneFiles}]
 	}
 	console.log(inputFiles);
+	console.log(args)
 	const rawOutput=await runCModule(args, inputFiles, [{filename: 'gsfPcmOut.raw', encoding: 'binary'}, {filename: 'info.txt', encoding:'utf8'}], 'WebGSFplayer', workerBool);
-	const psfOutput={sampleRate: 44100, stereo: true, renderLength: parseInt(rawOutput[1].fileData.split(', ')[0]), fade: parseInt(rawOutput[1].fileData.split(', ')[1])}
+	const gsfOutput={sampleRate: 44100, stereo: true, renderLength: parseInt(rawOutput[1].fileData.split(', ')[0]), fade: parseInt(rawOutput[1].fileData.split(', ')[1])}
 	var tempPCMdata=rawOutput[0];
 	tempPCMdata=new Int16Array(tempPCMdata.fileData.buffer)
-	psfOutput.pcmdata=tempPCMdata;
-	return psfOutput;
+	gsfOutput.pcmdata=tempPCMdata;
+	return gsfOutput;
 }
 async function playGME(filename, fileBool, fileData, settings, diffEmu){ // TO DO: onceInPage support?
 	console.log('playing GME file.');

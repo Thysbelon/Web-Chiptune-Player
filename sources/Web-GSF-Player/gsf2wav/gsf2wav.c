@@ -6,28 +6,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* demo program that renders a GSF file into a WAV */
+/* demo program that renders a GSF file into a raw file */
 
-#define SAMPLE_RATE 48000
+#define SAMPLE_RATE 44100
 #define FRAMES_IN_BUFFER 1024
 
 int16_t buffer[FRAMES_IN_BUFFER * 2/*channels*/];
-//uint8_t packed[BUFFER_SIZE * 4];
 
 static unsigned int length = 0;
-//static unsigned int fade = 0;
+static unsigned int fade = 0;
 
 /* global variable for the current pcm frame */
 uint64_t frame_no = 0;
 
 /* global variable - total pcm frames */
 uint64_t frame_total = 0;
-
-/* global variable - frame to start fading on */
-//uint64_t frame_fade = 0;
-
-//static int
-//write_wav_header(FILE *f);
 
 static void
 pack_frames(void);
@@ -127,26 +120,6 @@ static const psf_file_callbacks gsf2wav_psf_stdio = {
     gsf2wav_ftell,
 };
 
-/*
-static void
-apply_fade(void) {
-    uint64_t i = 0;
-    float fade;
-    for(i=0;i<BUFFER_SIZE;i++) {
-        if(frame_no + i > frame_total) {
-            buffer[(i*2)+0] = 0;
-            buffer[(i*2)+1] = 0;
-        }
-        if(frame_no + i > frame_fade) {
-            fade = ((float)(frame_total - frame_no - i)) / ((float)(frame_total - frame_fade));
-            fade *= fade;
-            buffer[(i*2) + 0] *= fade;
-            buffer[(i*2) + 1] *= fade;
-        }
-    }
-}
-*/
-
 static int gsf2wav_load(void *context, const uint8_t *exe, size_t exe_size, const uint8_t *reserved, size_t reserved_size) {
     (void)reserved;
     (void)reserved_size;
@@ -173,7 +146,7 @@ int main(int argc, const char *argv[]) {
     if(gsf == NULL) abort();
     gsf_clear(gsf);
 
-    if(psf_load("input.gsf",
+    if(psf_load(argv[1] /* the webapp will always change the name of the input file to "input.gsf", but having the input read from argv makes it easier to test (by testing a linux build) */,
         &gsf2wav_psf_stdio,0x22,gsf2wav_load,gsf,
         gsf2wav_tag_handler,NULL,0,
         status_callback,NULL) <= 0) {
@@ -194,8 +167,8 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
 	
-	if (argc > 1) {
-		frame_total = atoi(argv[1]); // This is input length. It should be in milliseconds.
+	if (argc == 3) {
+		frame_total = atoi(argv[2]); // This is input length. It should be in milliseconds.
 	} else {
 		frame_total = length;
 	}
@@ -204,42 +177,11 @@ int main(int argc, const char *argv[]) {
 
     for(frame_no=0;frame_no<frame_total; frame_no += FRAMES_IN_BUFFER) {
         gsf_render(gsf,buffer,FRAMES_IN_BUFFER);
-        //apply_fade();
-        //pack_frames();
-        //fwrite(packed,4, frame_total - frame_no > BUFFER_SIZE ? BUFFER_SIZE : frame_total - frame_no, out);
         fwrite(buffer,2, frame_total - frame_no > FRAMES_IN_BUFFER ? FRAMES_IN_BUFFER * 2/*channels*/ : (frame_total - frame_no) * 2/*channels*/, out);
     }
-
+	// output is singed 16 int little endian, 2 channels (stereo), and SAMPLE_RATE sample rate.
     gsf_shutdown(gsf);
     free(gsf);
     fclose(out);
     return 0;
 }
-
-/*
-static void pack_frames(void) {
-    unsigned int i = 0;
-    while(i < BUFFER_SIZE) {
-        pack_int16le(&packed[(i*4)+0],buffer[(i*2)+0]);
-        pack_int16le(&packed[(i*4)+2],buffer[(i*2)+1]);
-        i++;
-    }
-}
-
-static void pack_int16le(uint8_t *d, int16_t n) {
-    d[0] = (uint8_t)((uint16_t) n      );
-    d[1] = (uint8_t)((uint16_t) n >> 8 );
-}
-
-static void pack_uint16le(uint8_t *d, uint16_t n) {
-    d[0] = (uint8_t)((uint16_t) n      );
-    d[1] = (uint8_t)((uint16_t) n >> 8 );
-}
-
-static void pack_uint32le(uint8_t *d, uint32_t n) {
-    d[0] = (uint8_t)(n      );
-    d[1] = (uint8_t)(n >> 8 );
-    d[2] = (uint8_t)(n >> 16);
-    d[3] = (uint8_t)(n >> 24);
-}
-*/
