@@ -1,5 +1,5 @@
 console.log('worker alive.')
-ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@main/web/";
+ROOT_URL="https://cdn.jsdelivr.net/gh/Thysbelon/Web-Chiptune-Player@latest/web/";
 //ROOT_URL="http://localhost:8000/web/";
 
 isWorker=true;
