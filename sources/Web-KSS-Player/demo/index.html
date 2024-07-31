@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<head>
+<meta charset=utf-8>
+<title>kss2wav.js</title>
+<meta name=color-scheme content="dark light">
+<meta name=viewport content=width=device-width,initial-scale=1.0>
+<script src=kss2wav.js></script> <!-- remember to set the right script -->
+</head>
+<body>
+<label for="song-select-file">Upload a song:</label>
+<input type=file id="song-select-file" />
+<button>Run</button>
+<script>
+async function wrapper() {
+	var fileInput=document.getElementById("song-select-file")
+	var chiptuneArrayBuf=await fileInput.files[0].arrayBuffer()
+	const numChannels=1;
+	const psgQuality=0;
+	const sccQuality=0;
+	const opllQuality=0;
+	const songNumber=1;
+	const playTimeInSeconds=120;
+	const module = {
+		arguments: ["-n"+numChannels, `-q${psgQuality}${sccQuality}${opllQuality}`, '-s'+songNumber, "-p"+playTimeInSeconds, "input.kss"],
+		preRun: () => {
+			module.FS.writeFile("input.kss", new Uint8Array(chiptuneArrayBuf));
+		},
+		postRun: () => {
+			if (numChannels==1){
+				let output = module.FS.readFile("kssPcmOut.raw", {encoding: "binary"});
+				download(new File([output], "kssPcmOut.raw"))
+			} else if (numChannels==2) {
+				let psg0    = module.FS.readFile("psg0.raw", {encoding: "binary"});
+				let psg1    = module.FS.readFile("psg1.raw", {encoding: "binary"});
+				let psg2    = module.FS.readFile("psg2.raw", {encoding: "binary"});
+				let scc0    = module.FS.readFile("scc0.raw", {encoding: "binary"});
+				let scc1    = module.FS.readFile("scc1.raw", {encoding: "binary"});
+				let scc2    = module.FS.readFile("scc2.raw", {encoding: "binary"});
+				let scc3    = module.FS.readFile("scc3.raw", {encoding: "binary"});
+				let scc4    = module.FS.readFile("scc4.raw", {encoding: "binary"});
+				let opll0   = module.FS.readFile("opll0.raw", {encoding: "binary"});
+				let opll1   = module.FS.readFile("opll1.raw", {encoding: "binary"});
+				let opll2   = module.FS.readFile("opll2.raw", {encoding: "binary"});
+				let opll3   = module.FS.readFile("opll3.raw", {encoding: "binary"});
+				let opll4   = module.FS.readFile("opll4.raw", {encoding: "binary"});
+				let opll5   = module.FS.readFile("opll5.raw", {encoding: "binary"});
+				let opll6   = module.FS.readFile("opll6.raw", {encoding: "binary"});
+				let opll7   = module.FS.readFile("opll7.raw", {encoding: "binary"});
+				let opll8   = module.FS.readFile("opll8.raw", {encoding: "binary"});
+				let opll9   = module.FS.readFile("opll9.raw", {encoding: "binary"});
+				let opll10  = module.FS.readFile("opll10.raw", {encoding: "binary"});
+				let opll11  = module.FS.readFile("opll11.raw", {encoding: "binary"});
+				let opll12  = module.FS.readFile("opll12.raw", {encoding: "binary"});
+				let opll13  = module.FS.readFile("opll13.raw", {encoding: "binary"});
+				let opll14  = module.FS.readFile("opll14.raw", {encoding: "binary"});
+				download(new File([psg0  ], "psg0.raw"      ))
+				download(new File([psg1  ], "psg1.raw"      ))
+				download(new File([psg2  ], "psg2.raw"      ))
+				download(new File([scc0  ], "scc0.raw"      ))
+				download(new File([scc1  ], "scc1.raw"      ))
+				download(new File([scc2  ], "scc2.raw"      ))
+				download(new File([scc3  ], "scc3.raw"      ))
+				download(new File([scc4  ], "scc4.raw"      ))
+				download(new File([opll0 ], "opll0.raw"     ))
+				download(new File([opll1 ], "opll1.raw"     ))
+				download(new File([opll2 ], "opll2.raw"     ))
+				download(new File([opll3 ], "opll3.raw"     ))
+				download(new File([opll4 ], "opll4.raw"     ))
+				download(new File([opll5 ], "opll5.raw"     ))
+				download(new File([opll6 ], "opll6.raw"     ))
+				download(new File([opll7 ], "opll7.raw"     ))
+				download(new File([opll8 ], "opll8.raw"     ))
+				download(new File([opll9 ], "opll9.raw"     ))
+				download(new File([opll10], "opll10.raw"    ))
+				download(new File([opll11], "opll11.raw"    ))
+				download(new File([opll12], "opll12.raw"    ))
+				download(new File([opll13], "opll13.raw"    ))
+				download(new File([opll14], "opll14.raw"    ))
+			}
+		},
+	};
+	WebKSSplayer(module);
+}
+document.querySelector("button").addEventListener("click", wrapper)
+
+function download(file) { // to do: replace the file argument with blob and name?
+	const link = document.createElement('a')
+	const url = URL.createObjectURL(file)
+	
+	link.href = url
+	link.download = file.name
+	document.body.appendChild(link)
+	link.click()
+	
+	document.body.removeChild(link)
+	window.URL.revokeObjectURL(url)
+}
+</script>
