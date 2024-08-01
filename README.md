@@ -49,3 +49,4 @@ This library borrows code from many different open source libraries. If a librar
 - [snes_spc](https://github.com/blarggs-audio-libraries/snes_spc)
 - [sox-emscripten](https://github.com/rameshvarun/sox-emscripten)
 - [gsf2wav](https://github.com/jprjr/gsf2wav)
+- [libkss](https://github.com/digital-sound-antiques/libkss)
