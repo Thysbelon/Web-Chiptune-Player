@@ -35,6 +35,7 @@ You can loop a single chiptune infinitely. (currently only supported well for si
 <input type=file id="song-select-file" multiple />
 <button id=simple-play>simple-play</button>
 <button id=stop-simple-play>stop simple-play</button>
+<button id=simple-download>download WAV</button>
 </section>
 <p>Feel free to use the console to test the other functions in the library.
 <script>
@@ -42,10 +43,15 @@ function wrapperSimplePlay() {
 	var fileInput=document.getElementById("song-select-file")
 	playChiptune(fileInput.files)
 }
+function wrapperSimpleDownload() {
+	var fileInput=document.getElementById("song-select-file")
+	downloadChiptune(fileInput.files)
+}
 function wrapperDemo3() {
 	playChiptune('test-music/mmc5-test.nsfe', {loops: 'infinite', panning:{"Square 1":-1, "Square 2":1, "Square 3":-1, "Square 4":1}})
 }
 document.querySelector("button#simple-play").addEventListener("click", wrapperSimplePlay)
+document.querySelector("button#simple-download").addEventListener("click", wrapperSimpleDownload)
 document.querySelector("button#stop-simple-play").addEventListener("click", stopCurrentlyPlayingMusic)
 document.querySelector("button#demo3").addEventListener("click", wrapperDemo3)
 
