@@ -325,7 +325,8 @@ async function internal_playChiptune(input/* can be a fileInput file, a url, or 
 			console.error('sid (Commodore 64) not supported. it might be supported in the future.'); throw new TypeError(); return;
 			break;
 		case '.kss':
-			console.error('kss (MSX) not supported. it might be supported in the future.'); throw new TypeError(); return;
+			//console.error('kss (MSX) not supported. it might be supported in the future.'); throw new TypeError(); return;
+			cPlayerOutput=await playKSS(fileData, settings, workerBool);
 			break;
 		case '.mdx':
 			console.error('mdx (Sharp X68000) not supported. it might be supported in the future.'); throw new TypeError(); return;
@@ -392,6 +393,24 @@ async function playSPC(fileData, settings, workerBool){
 	const spcOutput={pcmdata: tempPCMdata, sampleRate: 32000, stereo: true, renderLength: renderLength} // object contains pcmdata, info for web audio, etc, depending on the player.
 	return spcOutput;
 }
+async function playKSS(fileData, settings, workerBool){
+	if (settings?.panning) {console.error('Panning has not yet been implemented for KSS.')}
+	const numChannels=1;
+	// TODO: add option to choose high quality. Currently only using low quality
+	var psgQuality=0, sccQuality=0, opllQuality=0;
+	var renderLength=0;
+	if (settings?.renderLength) {
+		renderLength=settings.renderLength;
+	} else {
+		console.warn('renderLength is not defined. KSS player cannot read length from file. Defaulting to 2 minutes.');
+		renderLength=120000;
+	}
+	// kss2wav only supports seconds. TODO?: rewrite kss2wav to support ms?
+	const rawOutput=await runCModule(["-n"+numChannels, `-q${psgQuality}${sccQuality}${opllQuality}`, '-s'+(settings?.track ? settings.track : 0), "-p"+Math.ceil(renderLength/1000), "input.kss"], [{filename: 'input.kss', fileData: fileData}], [{filename: 'kssPcmOut.raw', encoding: 'binary'}], 'WebKSSplayer', workerBool);
+	const pcmData=new Int16Array(rawOutput[0].fileData.buffer);
+	const kssOutput={pcmdata: pcmData, sampleRate: 44100, stereo: false, renderLength: renderLength};
+	return kssOutput;
+}
 async function playVGM(fileData, settings, workerBool){ // this should support panning. https://github.com/ValleyBell/libvgm/issues/80#issuecomment-976217329
 	// TODO: add panning support. libvgm has built-in panning support. mmontag's fork of libvgm might be used as a guide.
 	if (settings?.panning) {console.error('WebVGMplayer does not yet support panning. It is on the to-do list.')}
@@ -399,7 +418,7 @@ async function playVGM(fileData, settings, workerBool){ // this should support p
 	console.info('info.txt: '+rawOutput[1].fileData);
 	const vgmInfo=rawOutput[1].fileData.split(', ').map(elem => parseInt(elem));
 	//const pcmData=vgmInfo[0] ? new Int16Array(rawOutput[0].fileData.buffer) : (new Int16Array(rawOutput[0].fileData.buffer)).filter(isEvenIndex);
-	pcmData=new Int16Array(rawOutput[0].fileData.buffer);
+	const pcmData=new Int16Array(rawOutput[0].fileData.buffer);
 	const vgmOutput={pcmdata: pcmData, sampleRate: 44100, stereo: vgmInfo[0] ? true : false, renderLength: vgmInfo[1], introLength: vgmInfo[2]}
 	console.info('renderLength: '+vgmOutput.renderLength+' (raw: '+vgmInfo[1]+'), introLength: '+vgmOutput.introLength+' (raw: '+vgmInfo[2]+')');
 	return vgmOutput;

@@ -24,8 +24,10 @@ async function wrapper() {
 		arguments: ["-n"+numChannels, `-q${psgQuality}${sccQuality}${opllQuality}`, '-s'+songNumber, "-p"+playTimeInSeconds, "input.kss"],
 		preRun: () => {
 			module.FS.writeFile("input.kss", new Uint8Array(chiptuneArrayBuf));
+			console.time('kss2wav');
 		},
 		postRun: () => {
+			console.timeEnd('kss2wav');
 			if (numChannels==1){
 				let output = module.FS.readFile("kssPcmOut.raw", {encoding: "binary"});
 				download(new File([output], "kssPcmOut.raw"))
@@ -95,4 +97,6 @@ function download(file) { // to do: replace the file argument with blob and name
 	document.body.removeChild(link)
 	window.URL.revokeObjectURL(url)
 }
+
+// Sep 4 2024: performance seems good. linux kss2wav always takes 3.5sec to render 01 for 120sec. Emscripten takes between 5123ms and 3027ms with low quality settings.
 </script>
