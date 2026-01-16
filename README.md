@@ -13,6 +13,8 @@ It is currently a work in progress. It can play:
 - VGM & VGZ (many consoles) via [libvgm](https://github.com/ValleyBell/libvgm)
 - SPC (Super Famicom/SNES) via [snes_spc](https://github.com/blarggs-audio-libraries/snes_spc)
 - PSF (PlayStation 1 Sequenced Music) via [upse123](https://packages.ubuntu.com/en/mantic/upse123)
+- GSF (Game Boy Advance) via [gsf2wav](https://github.com/jprjr/gsf2wav)
+- KSS (MSX computers) via [libkss](https://github.com/digital-sound-antiques/libkss)
 - These file types via the [game_music_emu library](https://github.com/libgme/game-music-emu):
 	- NSF & NSFE (Famicom/NES)
 	- GBS (Game Boy)
